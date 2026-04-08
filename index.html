@@ -150,9 +150,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);heigh
   <div class="login-wrap">
     <div class="login-logo">Grupo <em>Cober</em></div>
     <div class="login-tagline">Tool de Atracción de Talento</div>
-    <input type="password" id="login-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    <div style="margin-bottom:18px">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--tx3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;text-align:left">Contraseña</div>
+      <input type="password" id="login-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" style="margin-bottom:0">
+    </div>
+    <div style="margin-bottom:18px">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--tx3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;text-align:left">OpenAI API Key</div>
+      <input type="password" id="login-apikey" placeholder="sk-proj-..." onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;background:var(--bg);border:1px solid var(--b2);border-radius:var(--r2);padding:12px 16px;color:var(--tx);font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.05em;outline:none;transition:border-color .2s">
+      <div style="font-size:10px;color:var(--tx3);font-family:'DM Mono',monospace;margin-top:4px">Se guarda solo en tu navegador, nunca en el servidor</div>
+    </div>
     <button class="login-btn" onclick="doLogin()">Ingresar</button>
-    <div class="login-error" id="login-err">Contraseña incorrecta</div>
+    <div class="login-error" id="login-err"></div>
   </div>
 </div>
 
@@ -236,7 +244,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);heigh
 <div class="page" id="page-apertura">
   <div class="card">
     <div class="card-title">Apertura de Vacante</div>
-    <div class="card-desc">Completá los datos del pedido del líder. Los campos coinciden con el Excel de seguimiento.</div>
+    <div class="card-desc">Este módulo te permite registrar formalmente el pedido del líder y generar un resumen de apertura listo para compartir. Completá los datos clave de la búsqueda — los campos coinciden con el Excel de seguimiento de vacantes — y la IA armará un brief con el perfil objetivo y el plan de acción sugerido.</div>
     <div class="form-group">
       <label class="form-label">Familia de puesto *</label>
       <select class="form-select" id="ap-familia" onchange="onFamilia('ap-familia','ap-fhint')"></select>
@@ -951,7 +959,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);heigh
 // CONFIG
 // ═══════════════════════════════════════════
 const PWD = 'cober2025';
-const OKEY = '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';
+let OKEY = '';
 const OURL = 'https://api.openai.com/v1/chat/completions';
 
 // ═══════════════════════════════════════════
@@ -1002,16 +1010,28 @@ const S = {
 // LOGIN
 // ═══════════════════════════════════════════
 function doLogin() {
-  if (document.getElementById('login-pwd').value === PWD) {
-    sessionStorage.setItem('ca','1');
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-    initApp();
-  } else {
-    document.getElementById('login-err').style.display = 'block';
+  const pwd = document.getElementById('login-pwd').value;
+  const apikey = document.getElementById('login-apikey').value.trim();
+  const err = document.getElementById('login-err');
+  if (pwd !== PWD) {
+    err.textContent = 'Contraseña incorrecta';
+    err.style.display = 'block';
+    return;
   }
+  if (!apikey || !apikey.startsWith('sk-')) {
+    err.textContent = 'Ingresá una API key válida de OpenAI (comienza con sk-)';
+    err.style.display = 'block';
+    return;
+  }
+  OKEY = apikey;
+  sessionStorage.setItem('ca','1');
+  sessionStorage.setItem('okey', apikey);
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  initApp();
 }
-if (sessionStorage.getItem('ca') === '1') {
+if (sessionStorage.getItem('ca') === '1' && sessionStorage.getItem('okey')) {
+  OKEY = sessionStorage.getItem('okey');
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   setTimeout(initApp, 0);
