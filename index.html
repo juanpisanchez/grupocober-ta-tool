@@ -1,0 +1,2491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grupo Cober · Tool de Atracción de Talento</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#08090c;--s1:#0f1117;--s2:#161920;--s3:#1c2028;--b1:#1e2330;--b2:#252d3d;--ac:#3b82f6;--adim:rgba(59,130,246,0.15);--ac2:#8b5cf6;--ac3:#10b981;--ac4:#f59e0b;--tx:#e2e8f4;--tx2:#7d8a9e;--tx3:#3d4557;--danger:#ef4444;--warn:#f59e0b;--ok:#10b981;--r:8px;--r2:5px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);height:100vh;overflow:hidden;font-size:14px}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+#login-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+.login-wrap{width:400px;padding:48px 40px;background:var(--s1);border:1px solid var(--b2);border-radius:16px;text-align:center}
+.login-logo{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:32px;letter-spacing:-1px;margin-bottom:4px}
+.login-logo em{color:var(--ac);font-style:normal}
+.login-tagline{font-family:'DM Mono',monospace;font-size:11px;color:var(--tx3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:36px}
+.login-wrap input[type=password]{width:100%;background:var(--bg);border:1px solid var(--b2);border-radius:var(--r2);padding:12px 16px;color:var(--tx);font-family:'DM Mono',monospace;font-size:14px;letter-spacing:.15em;text-align:center;outline:none;transition:border-color .2s;margin-bottom:12px}
+.login-wrap input:focus{border-color:var(--ac)}
+.login-btn{width:100%;background:var(--ac);border:none;border-radius:var(--r2);padding:13px;color:#fff;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:14px;cursor:pointer;transition:opacity .2s}
+.login-btn:hover{opacity:.88}
+.login-error{color:var(--danger);font-size:12px;font-family:'DM Mono',monospace;margin-top:10px;display:none}
+#app{display:none;height:100vh;flex-direction:row}
+.sidebar{width:234px;min-width:234px;background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+.sidebar-logo{padding:18px 18px 14px;border-bottom:1px solid var(--b1)}
+.logo-text{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:19px;letter-spacing:-.5px}
+.logo-text em{color:var(--ac);font-style:normal}
+.logo-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--tx3);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+.nav-group{padding:10px 10px 4px}
+.nav-group-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--tx3);letter-spacing:.14em;text-transform:uppercase;padding:0 8px;margin-bottom:4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(--r2);cursor:pointer;color:var(--tx2);font-size:12.5px;transition:all .15s;border:1px solid transparent;margin-bottom:1px;line-height:1.3}
+.nav-item:hover{background:var(--s2);color:var(--tx)}
+.nav-item.active{background:var(--adim);border-color:rgba(59,130,246,.3);color:var(--ac);font-weight:500}
+.nav-icon{font-size:13px;width:17px;text-align:center;flex-shrink:0}
+.sidebar-footer{margin-top:auto;padding:10px;border-top:1px solid var(--b1)}
+.user-badge{display:flex;align-items:center;gap:9px;padding:8px 10px;background:var(--s2);border-radius:var(--r2)}
+.user-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--ac),var(--ac2));display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:11px;color:#fff;flex-shrink:0}
+.user-name{font-size:12px;font-weight:500}
+.user-role{font-size:10px;color:var(--tx3);font-family:'DM Mono',monospace}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{padding:13px 26px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;background:var(--s1);flex-shrink:0}
+.topbar-title{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:18px;letter-spacing:-.3px}
+.topbar-desc{font-size:11px;color:var(--tx2);margin-top:1px}
+.dp-pill{display:flex;align-items:center;gap:7px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);border-radius:20px;padding:5px 12px;font-size:11px;color:var(--ok);font-family:'DM Mono',monospace;max-width:280px;cursor:pointer}
+.dp-pill-dot{width:5px;height:5px;background:var(--ok);border-radius:50%;flex-shrink:0;animation:blink 2s infinite}
+.dp-pill-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.content{flex:1;overflow-y:auto;padding:24px 28px}
+.page{display:none}.page.active{display:block}
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:20px 22px;margin-bottom:14px}
+.card-title{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:14px;margin-bottom:3px}
+.card-desc{font-size:12px;color:var(--tx2);margin-bottom:16px;line-height:1.5}
+.form-group{margin-bottom:13px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.form-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
+.form-label{display:block;font-family:'DM Mono',monospace;font-size:10px;color:var(--tx2);letter-spacing:.06em;margin-bottom:4px}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--bg);border:1px solid var(--b2);border-radius:var(--r2);padding:8px 12px;color:var(--tx);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--ac)}
+.form-textarea{resize:vertical;min-height:76px;line-height:1.6}
+.form-select option{background:var(--s1)}
+.familia-hint{font-size:10px;color:var(--tx3);font-family:'DM Mono',monospace;margin-top:3px;display:none}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 15px;border-radius:var(--r2);font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:13px;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:var(--ac);color:#fff}.btn-primary:hover{opacity:.85}
+.btn-ghost{background:transparent;color:var(--tx2);border:1px solid var(--b2)}.btn-ghost:hover{background:var(--s2);color:var(--tx)}
+.btn-ok{background:rgba(16,185,129,.12);color:var(--ok);border:1px solid rgba(16,185,129,.25)}.btn-ok:hover{background:rgba(16,185,129,.2)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-group{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.loading-bar{height:2px;background:linear-gradient(90deg,var(--ac),var(--ac2),var(--ac3),var(--ac));background-size:300% 100%;animation:loadanim 1.5s linear infinite;border-radius:1px;margin:6px 0;display:none}
+.loading-bar.on{display:block}
+@keyframes loadanim{0%{background-position:100% 0}100%{background-position:-200% 0}}
+.ai-out{background:var(--bg);border:1px solid var(--b2);border-radius:var(--r);padding:16px 18px;margin-top:12px;display:none}
+.ai-out.on{display:block}
+.ai-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--b1)}
+.ai-badge{display:flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:10px;color:var(--ok);letter-spacing:.08em;text-transform:uppercase}
+.ai-dot{width:5px;height:5px;background:var(--ok);border-radius:50%;animation:blink 1.5s infinite}
+.ai-btns{display:flex;gap:6px}
+.cbtn{background:transparent;border:1px solid var(--b2);border-radius:var(--r2);color:var(--tx2);padding:3px 9px;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;transition:all .15s}
+.cbtn:hover{border-color:var(--ac);color:var(--ac)}
+.ai-text{font-size:12.5px;line-height:1.8;color:var(--tx);white-space:pre-wrap}
+.upload-zone{border:2px dashed var(--b2);border-radius:var(--r);padding:20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--bg)}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--ac);background:var(--adim)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:24px;margin-bottom:6px}
+.upload-text{font-size:13px;color:var(--tx2)}
+.upload-sub{font-size:10px;color:var(--tx3);margin-top:3px;font-family:'DM Mono',monospace}
+.file-list{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.file-item{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--s2);border-radius:var(--r2);font-size:11px;font-family:'DM Mono',monospace;color:var(--tx2)}
+.fi-icon{color:var(--ac)}.fi-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fi-size{color:var(--tx3);flex-shrink:0}
+.fi-rm{color:var(--tx3);cursor:pointer;padding:2px 5px;border-radius:3px;transition:all .15s;flex-shrink:0}.fi-rm:hover{color:var(--danger);background:rgba(239,68,68,.1)}
+.alert{padding:9px 13px;border-radius:var(--r2);font-size:12px;margin-bottom:12px;display:flex;align-items:center;gap:8px;line-height:1.5}
+.alert-warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:var(--warn)}
+.alert-ok{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);color:var(--ok)}
+.alert-info{background:var(--adim);border:1px solid rgba(59,130,246,.25);color:var(--ac)}
+.tabs{display:flex;gap:3px;background:var(--bg);padding:3px;border-radius:var(--r);margin-bottom:14px;border:1px solid var(--b1)}
+.tab{flex:1;padding:7px 10px;text-align:center;border-radius:var(--r2);cursor:pointer;font-size:12px;font-weight:500;color:var(--tx2);transition:all .15s}
+.tab.active{background:var(--s2);color:var(--tx);border:1px solid var(--b2)}
+.tab:hover:not(.active){color:var(--tx)}
+.mode-toggle{display:flex;gap:8px;margin-bottom:14px}
+.mode-btn{flex:1;padding:9px;text-align:center;border-radius:var(--r2);cursor:pointer;font-size:12px;font-weight:500;border:1px solid var(--b2);background:var(--bg);color:var(--tx2);transition:all .15s}
+.mode-btn.active{background:var(--adim);border-color:rgba(59,130,246,.4);color:var(--ac)}
+.eb{background:var(--bg);border:1px solid var(--b1);border-radius:var(--r);margin-bottom:8px;overflow:hidden}
+.eb-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;transition:background .15s}
+.eb-head:hover{background:var(--s2)}
+.eb-num{width:22px;height:22px;border-radius:50%;background:var(--adim);border:1px solid rgba(59,130,246,.3);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--ac);flex-shrink:0}
+.eb-title{font-weight:600;font-size:13px;flex:1}
+.eb-chev{color:var(--tx3);font-size:11px;transition:transform .2s}
+.eb.open .eb-chev{transform:rotate(180deg)}
+.eb-body{display:none;padding:0 14px 14px;border-top:1px solid var(--b1)}
+.eb.open .eb-body{display:block}
+.cand-list{display:flex;flex-direction:column;gap:9px;margin-top:10px}
+.cand-card{background:var(--bg);border:1px solid var(--b2);border-radius:var(--r);padding:12px 14px;display:flex;align-items:flex-start;gap:12px}
+.cand-rank{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:12px;flex-shrink:0}
+.rk1{background:rgba(245,158,11,.2);color:var(--warn)}.rk2{background:rgba(226,232,244,.1);color:var(--tx)}.rk3{background:rgba(205,127,50,.15);color:#cd7f32}.rkn{background:var(--s2);color:var(--tx2)}
+.cand-info{flex:1;min-width:0}
+.cand-name{font-weight:600;font-size:13px;margin-bottom:2px}
+.cand-meta{font-size:10px;color:var(--tx2);font-family:'DM Mono',monospace;margin-bottom:6px}
+.score-bar{height:3px;background:var(--b2);border-radius:2px;overflow:hidden;width:160px;margin-bottom:5px}
+.score-fill{height:100%;border-radius:2px;transition:width .8s ease}
+.sh{background:var(--ok)}.sm{background:var(--warn)}.sl{background:var(--danger)}
+.cand-reason{font-size:11px;color:var(--tx2);line-height:1.5}
+.cand-check{width:15px;height:15px;accent-color:var(--ac);cursor:pointer;margin-top:3px}
+.tag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:9px;font-family:'DM Mono',monospace}
+.tg{background:rgba(16,185,129,.12);color:var(--ok)}.ty{background:rgba(245,158,11,.12);color:var(--warn)}.tb{background:var(--adim);color:var(--ac)}.tr{background:rgba(239,68,68,.12);color:var(--danger)}
+.home-welcome{margin-bottom:22px}
+.home-welcome h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:25px;letter-spacing:-.5px;margin-bottom:4px}
+.home-welcome p{color:var(--tx2);font-size:13px}
+.home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:20px}
+.hcard{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:16px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.hcard::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity .2s}
+.hcard.cb::after{background:var(--ac)}.hcard.cp::after{background:var(--ac2)}.hcard.cg::after{background:var(--ac3)}.hcard.cy::after{background:var(--ac4)}
+.hcard:hover{border-color:var(--b2);transform:translateY(-2px)}.hcard:hover::after{opacity:1}
+.hcard-icon{font-size:22px;margin-bottom:8px}
+.hcard-title{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:13px;margin-bottom:4px}
+.hcard-desc{font-size:11px;color:var(--tx2);line-height:1.5}
+.flx{display:flex;align-items:center;justify-content:space-between}
+.masivo-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
+.masivo-table th{text-align:left;padding:7px 9px;background:var(--s2);border:1px solid var(--b1);font-family:'DM Mono',monospace;font-size:10px;color:var(--tx2);letter-spacing:.05em}
+.masivo-table td{padding:5px 7px;border:1px solid var(--b1)}
+.masivo-table td input{width:100%;background:transparent;border:none;color:var(--tx);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;padding:2px 3px}
+.masivo-table tr:hover td{background:var(--s2)}
+.dp-row{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-wrap">
+    <div class="login-logo">Grupo <em>Cober</em></div>
+    <div class="login-tagline">Tool de Atracción de Talento</div>
+    <input type="password" id="login-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="login-err">Contraseña incorrecta</div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text">Grupo <em>Cober</em></div>
+      <div class="logo-sub">Tool de Atracción de Talento</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Principal</div>
+      <div class="nav-item active" data-page="home" onclick="nav('home')"><span class="nav-icon">⊞</span> Inicio</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Búsqueda</div>
+      <div class="nav-item" data-page="apertura" onclick="nav('apertura')"><span class="nav-icon">📋</span> Apertura de Vacante</div>
+      <div class="nav-item" data-page="dp" onclick="nav('dp')"><span class="nav-icon">📄</span> Descripción de Puesto</div>
+      <div class="nav-item" data-page="estrategia" onclick="nav('estrategia')"><span class="nav-icon">🎯</span> Estrategia de Atracción</div>
+      <div class="nav-item" data-page="screening" onclick="nav('screening')"><span class="nav-icon">🔍</span> Screening de CVs</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Entrevistas</div>
+      <div class="nav-item" data-page="entrevistas" onclick="nav('entrevistas')"><span class="nav-icon">❓</span> Preparación de Entrevistas</div>
+      <div class="nav-item" data-page="assessment" onclick="nav('assessment')"><span class="nav-icon">🏆</span> Assessment Center</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Candidatos</div>
+      <div class="nav-item" data-page="informe" onclick="nav('informe')"><span class="nav-icon">📝</span> Informe de Entrevista</div>
+      <div class="nav-item" data-page="psico" onclick="nav('psico')"><span class="nav-icon">🧠</span> Informe Psicotécnico</div>
+      <div class="nav-item" data-page="feedback" onclick="nav('feedback')"><span class="nav-icon">💬</span> Feedback al Candidato</div>
+      <div class="nav-item" data-page="oferta" onclick="nav('oferta')"><span class="nav-icon">💌</span> Carta Oferta</div>
+      <div class="nav-item" data-page="lider" onclick="nav('lider')"><span class="nav-icon">📤</span> Shortlist al Líder</div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-badge">
+        <div class="user-av" id="uav">S</div>
+        <div>
+          <div class="user-name">Selector</div>
+          <div class="user-role">Talent Acquisition · Cober</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="tb-t">Inicio</div>
+        <div class="topbar-desc" id="tb-d">Grupo Cober · Tool de Atracción de Talento</div>
+      </div>
+      <div class="dp-pill" id="dp-pill" style="display:none" onclick="nav('dp')">
+        <div class="dp-pill-dot"></div>
+        <span class="dp-pill-text" id="dp-pill-txt">DP activa</span>
+      </div>
+    </div>
+    <div class="content">
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="home-welcome">
+    <h1>Bienvenido 👋</h1>
+    <p>Seleccioná un módulo para comenzar. La IA está lista para ayudarte.</p>
+  </div>
+  <div id="home-dp-alert" class="alert alert-ok" style="display:none">✓ DP activa: <strong id="home-dp-name"></strong></div>
+  <div class="home-grid">
+    <div class="hcard cb" onclick="nav('apertura')"><div class="hcard-icon">📋</div><div class="hcard-title">Apertura de Vacante</div><div class="hcard-desc">Registrá la solicitud del líder con todos los datos del Excel.</div></div>
+    <div class="hcard cb" onclick="nav('dp')"><div class="hcard-icon">📄</div><div class="hcard-title">Descripción de Puesto</div><div class="hcard-desc">Generá o cargá la DP. Es la base de todos los módulos.</div></div>
+    <div class="hcard cp" onclick="nav('estrategia')"><div class="hcard-icon">🎯</div><div class="hcard-title">Estrategia de Atracción</div><div class="hcard-desc">Research, avisos, booleanas, headhunting y flyer.</div></div>
+    <div class="hcard cb" onclick="nav('screening')"><div class="hcard-icon">🔍</div><div class="hcard-title">Screening de CVs</div><div class="hcard-desc">Ranking de candidatos con criterios excluyentes y competencias.</div></div>
+    <div class="hcard cy" onclick="nav('entrevistas')"><div class="hcard-icon">❓</div><div class="hcard-title">Preparación de Entrevistas</div><div class="hcard-desc">Guía de competencias, preguntas y guía para el líder.</div></div>
+    <div class="hcard cy" onclick="nav('assessment')"><div class="hcard-icon">🏆</div><div class="hcard-title">Assessment Center</div><div class="hcard-desc">Casos, grillas de observación y consolidado.</div></div>
+    <div class="hcard cg" onclick="nav('informe')"><div class="hcard-icon">📝</div><div class="hcard-title">Informe de Entrevista</div><div class="hcard-desc">Informe ejecutivo de 4 secciones desde tus observaciones.</div></div>
+    <div class="hcard cg" onclick="nav('psico')"><div class="hcard-icon">🧠</div><div class="hcard-title">Informe Psicotécnico</div><div class="hcard-desc">Resumen claro para el líder sin jerga técnica.</div></div>
+    <div class="hcard cg" onclick="nav('feedback')"><div class="hcard-icon">💬</div><div class="hcard-title">Feedback al Candidato</div><div class="hcard-desc">Mensajes empáticos por mail o WhatsApp.</div></div>
+    <div class="hcard cp" onclick="nav('oferta')"><div class="hcard-icon">💌</div><div class="hcard-title">Carta Oferta</div><div class="hcard-desc">Individual o masiva. Indeterminado, plazo fijo o eventual.</div></div>
+    <div class="hcard cg" onclick="nav('lider')"><div class="hcard-icon">📤</div><div class="hcard-title">Shortlist al Líder</div><div class="hcard-desc">Subí informes y CVs. La IA genera un PDF comparativo.</div></div>
+  </div>
+</div>
+
+<!-- APERTURA -->
+<div class="page" id="page-apertura">
+  <div class="card">
+    <div class="card-title">Apertura de Vacante</div>
+    <div class="card-desc">Completá los datos del pedido del líder. Los campos coinciden con el Excel de seguimiento.</div>
+    <div class="form-group">
+      <label class="form-label">Familia de puesto *</label>
+      <select class="form-select" id="ap-familia" onchange="onFamilia('ap-familia','ap-fhint')"></select>
+      <div class="familia-hint" id="ap-fhint"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Puesto *</label>
+      <input class="form-input" id="ap-puesto-libre" placeholder="ej: Enfermero/a de Internación">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Unidad de negocio *</label>
+        <select class="form-select" id="ap-unidad"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Selector asignado</label>
+        <select class="form-select" id="ap-selector"></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Tipo de vacante</label>
+        <select class="form-select" id="ap-tipo-vac"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Motivo de contratación</label>
+        <select class="form-select" id="ap-motivo"></select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Fecha de apertura</label>
+        <input class="form-input" id="ap-fecha" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cantidad de posiciones</label>
+        <input class="form-input" id="ap-cantidad" type="number" min="1" value="1">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Líder / Hiring Manager</label>
+      <input class="form-input" id="ap-lider" placeholder="Nombre del líder solicitante">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Subir DP existente (opcional)</label>
+      <div class="upload-zone" id="ap-dp-zone" style="padding:14px 18px">
+        <input type="file" id="ap-dp-file" accept=".docx,.doc,.txt,.pdf" onchange="handleModuloDp(this.files[0],'ap')">
+        <div style="font-size:13px;color:var(--tx2)">📄 Subí la DP si ya existe</div>
+        <div style="font-size:10px;color:var(--tx3);margin-top:3px;font-family:'DM Mono',monospace">DOCX · DOC · PDF · TXT</div>
+      </div>
+      <div class="file-list" id="ap-dp-info"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Contexto / Información adicional del líder</label>
+      <textarea class="form-textarea" id="ap-contexto" placeholder="Qué pidió el líder, urgencia, perfil especial..."></textarea>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="generarApertura()">✨ Generar Resumen</button>
+      <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;color:var(--tx2)">
+        <input type="checkbox" id="ap-brief" style="accent-color:var(--ac)"> Incluir brief para consultora/líder
+      </label>
+    </div>
+  </div>
+  <div class="loading-bar" id="ap-lb"></div>
+  <div class="ai-out" id="ap-out">
+    <div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>Generado por IA</div>
+    <div class="ai-btns"><button class="cbtn" onclick="cp('ap-txt')">Copiar</button></div></div>
+    <div class="ai-text" id="ap-txt"></div>
+  </div>
+</div>
+
+<!-- DESCRIPCIÓN DE PUESTO -->
+<div class="page" id="page-dp">
+  <div class="tabs">
+    <div class="tab active" id="dp-tab1" onclick="swDp('form')">✏️ Generar con IA</div>
+    <div class="tab" id="dp-tab2" onclick="swDp('upload')">📂 Subir DP existente</div>
+  </div>
+  <div id="dp-form-panel">
+    <div class="card">
+      <div class="card-title">Generar Descripción de Puesto</div>
+      <div class="card-desc">Completá los datos. La IA generará la DP con el formato estándar de Grupo Cober.</div>
+      <div class="form-group">
+        <label class="form-label">Familia de puesto</label>
+        <select class="form-select" id="dp-familia" onchange="onFamilia('dp-familia','dp-fhint')"></select>
+        <div class="familia-hint" id="dp-fhint"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Puesto *</label>
+          <input class="form-input" id="dp-puesto" placeholder="ej: Técnico/a de Laboratorio">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unidad / Centro médico</label>
+          <select class="form-select" id="dp-unidad"></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Reporta a</label>
+          <input class="form-input" id="dp-reporta" placeholder="ej: Jefe de Operaciones">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Gente a cargo</label>
+          <select class="form-select" id="dp-gente"><option value="No">No</option><option value="Sí">Sí</option></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Objetivo del rol / contexto</label>
+        <textarea class="form-textarea" id="dp-objetivo" placeholder="Describí el propósito del puesto y el área..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tareas principales</label>
+        <textarea class="form-textarea" id="dp-tareas" placeholder="Listá las principales tareas que va a realizar..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Formación requerida</label>
+          <input class="form-input" id="dp-formacion" placeholder="ej: Título en enfermería, matrícula vigente">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Experiencia requerida</label>
+          <input class="form-input" id="dp-experiencia" placeholder="ej: Mínimo 2 años en internación">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Conocimientos técnicos</label>
+        <textarea class="form-textarea" id="dp-conocimientos" placeholder="ej: Electrocardiografía, protocolos de bioseguridad..." style="min-height:60px"></textarea>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="generarDP()">✨ Generar DP</button>
+        <button class="btn btn-ghost" onclick="limpiarDP()">Limpiar</button>
+      </div>
+    </div>
+  </div>
+  <div id="dp-upload-panel" style="display:none">
+    <div class="card">
+      <div class="card-title">Subir DP Existente</div>
+      <div class="card-desc">Subí el archivo Word o PDF de la DP. La IA la leerá y usará como base para todos los módulos.</div>
+      <div class="upload-zone" id="dp-upload-zone">
+        <input type="file" id="dp-file" accept=".docx,.doc,.txt,.pdf" onchange="handleDpUpload(this.files[0])">
+        <div class="upload-icon">📄</div>
+        <div class="upload-text">Arrastrá el archivo o hacé clic para seleccionar</div>
+        <div class="upload-sub">DOCX · DOC · PDF · TXT</div>
+      </div>
+      <div class="file-list" id="dp-up-info"></div>
+      <div class="btn-group" id="dp-up-btns" style="display:none">
+        <button class="btn btn-primary" onclick="procesarDpUpload()">✨ Procesar DP</button>
+        <button class="btn btn-ghost" onclick="limpiarDpUpload()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+  <div class="loading-bar" id="dp-lb"></div>
+  <div class="ai-out" id="dp-out">
+    <div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>Generado por IA</div>
+    <div class="ai-btns">
+      <button class="cbtn" onclick="cp('dp-txt')">Copiar</button>
+      <button class="cbtn" onclick="dlDpPdf()">⬇ PDF</button>
+      <button class="cbtn" onclick="dlDpWord()">⬇ Word</button>
+      <button class="btn btn-ok" style="padding:3px 11px;font-size:11px" onclick="guardarDP()">✓ Usar esta DP</button>
+    </div></div>
+    <div class="ai-text" id="dp-txt"></div>
+  </div>
+</div>
+
+<!-- ESTRATEGIA DE ATRACCIÓN -->
+<div class="page" id="page-estrategia">
+  <div id="estrat-alert" class="alert alert-warn" style="display:none">⚠️ Sin DP activa. Los resultados serán más generales. <a href="#" onclick="nav('dp')" style="text-decoration:underline">Cargá una DP</a>.</div>
+  <div class="card">
+    <div class="card-title">Contexto de la Búsqueda</div>
+    <div class="card-desc">Datos base para todos los módulos de estrategia.</div>
+    <div class="form-group">
+      <label class="form-label">Familia de puesto</label>
+      <select class="form-select" id="es-familia" onchange="onFamilia('es-familia','es-fhint')"></select>
+      <div class="familia-hint" id="es-fhint"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Puesto</label>
+      <input class="form-input" id="es-puesto" placeholder="ej: Enfermero/a de Internación">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Unidad de negocio</label>
+        <select class="form-select" id="es-unidad"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Seniority</label>
+        <select class="form-select" id="es-nivel">
+          <option>Trainee</option><option>Junior</option><option>Semi-Senior</option><option>Senior</option><option>Especialista</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Subir DP específica (mejora todos los bloques)</label>
+      <div class="upload-zone" id="es-dp-zone" style="padding:12px 18px">
+        <input type="file" id="es-dp-file" accept=".docx,.doc,.txt,.pdf" onchange="handleModuloDp(this.files[0],'es')">
+        <div style="font-size:12px;color:var(--tx2)">📄 Subí la DP del puesto</div>
+        <div style="font-size:10px;color:var(--tx3);margin-top:2px;font-family:'DM Mono',monospace">DOCX · DOC · PDF · TXT</div>
+      </div>
+      <div class="file-list" id="es-dp-info"></div>
+    </div>
+  </div>
+
+  <div class="eb open" id="eb1">
+    <div class="eb-head" onclick="toggleEb('eb1')"><div class="eb-num">1</div><div class="eb-title">Research de mercado</div><div class="eb-chev">▼</div></div>
+    <div class="eb-body">
+      <div class="form-group" style="margin-top:10px"><label class="form-label">Contexto adicional (opcional)</label><textarea class="form-textarea" id="e1-extra" placeholder="Algún dato de mercado que quieras considerar..." style="min-height:55px"></textarea></div>
+      <div class="btn-group"><button class="btn btn-primary" onclick="genEstrat(1)">✨ Generar</button></div>
+      <div class="loading-bar" id="e1-lb"></div>
+      <div class="ai-out" id="e1-out"><div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>IA</div><button class="cbtn" onclick="cp('e1-txt')">Copiar</button></div><div class="ai-text" id="e1-txt"></div></div>
+    </div>
+  </div>
+
+  <div class="eb" id="eb2">
+    <div class="eb-head" onclick="toggleEb('eb2')"><div class="eb-num">2</div><div class="eb-title">Tipo de búsqueda recomendado</div><div class="eb-chev">▼</div></div>
+    <div class="eb-body">
+      <div class="btn-group" style="margin-top:10px"><button class="btn btn-primary" onclick="genEstrat(2)">✨ Generar</button></div>
+      <div class="loading-bar" id="e2-lb"></div>
+      <div class="ai-out" id="e2-out"><div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>IA</div><button class="cbtn" onclick="cp('e2-txt')">Copiar</button></div><div class="ai-text" id="e2-txt"></div></div>
+    </div>
+  </div>
+
+  <div class="eb" id="eb3">
+    <div class="eb-head" onclick="toggleEb('eb3')"><div class="eb-num">3</div><div class="eb-title">Aviso de empleo</div><div class="eb-chev">▼</div></div>
+    <div class="eb-body">
+      <div class="form-row" style="margin-top:10px">
+        <div class="form-group"><label class="form-label">Canal</label><select class="form-select" id="e3-canal"><option>LinkedIn</option><option>Bumeran</option><option>Computrabajo</option><option>Zonajobs</option><option>Bolsa interna</option><option>WhatsApp</option></select></div>
+        <div class="form-group"><label class="form-label">Tono</label><select class="form-select" id="e3-tono"><option>Profesional y formal</option><option>Cercano y humano</option><option>Dinámico y atractivo</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Instrucciones adicionales</label><textarea class="form-textarea" id="e3-extra" placeholder="ej: Destacar crecimiento, no mencionar salario..." style="min-height:55px"></textarea></div>
+      <div class="btn-group"><button class="btn btn-primary" onclick="genEstrat(3)">✨ Generar Aviso</button></div>
+      <div class="loading-bar" id="e3-lb"></div>
+      <div class="ai-out" id="e3-out"><div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>IA</div><button class="cbtn" onclick="cp('e3-txt')">Copiar</button></div><div class="ai-text" id="e3-txt"></div></div>
+    </div>
+  </div>
+
+  <div class="eb" id="eb4">
+    <div class="eb-head" onclick="toggleEb('eb4')"><div class="eb-num">4</div><div class="eb-title">Flyer para LinkedIn / WhatsApp</div><div class="eb-chev">▼</div></div>
+    <div class="eb-body">
+      <p style="font-size:12px;color:var(--tx2);margin:10px 0 8px">La IA generará el texto formateado y optimizado para un flyer visual. Luego lo podés pegar en Canva, PowerPoint o similar.</p>
+      <div class="form-group"><label class="form-label">Colores / estilo visual preferido (opcional)</label><input class="form-input" id="e4-estilo" placeholder="ej: azul y blanco, minimalista, con foto de equipo..."></div>
+      <div class="btn-group"><button class="btn btn-primary" onclick="genEstrat(4)">✨ Generar Contenido Flyer</button></div>
+      <div class="loading-bar" id="e4-lb"></div>
+      <div class="ai-out" id="e4-out"><div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>IA</div><button class="cbtn" onclick="cp('e4-txt')">Copiar</button></div><div class="ai-text" id="e4-txt"></div></div>
+    </div>
+  </div>
+
+  <div class="eb" id="eb5">
+    <div class="eb-head" onclick="toggleEb('eb5')"><div class="eb-num">5</div><div class="eb-title">Booleanas de búsqueda</div><div class="eb-chev">▼</div></div>
+    <div class="eb-body">
+      <div class="form-group" style="margin-top:10px"><label class="form-label">Plataforma</label><select class="form-select" id="e5-plat"><option>LinkedIn</option><option>Google X-Ray</option><option>Ambas</option></select></div>
+      <div class="btn-group"><button class="btn btn-primary" onclick="genEstrat(5)">✨ Generar Booleanas</button></div>
+      <div class="loading-bar" id="e5-lb"></div>
+      <div class="ai-out" id="e5-out"><div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>IA</div><button class="cbtn" onclick="cp('e5-txt')">Copiar</button></div><div class="ai-text" id="e5-txt"></div></div>
+    </div>
+  </div>
+
+  <div class="eb" id="eb6">
+    <div class="eb-head" onclick="toggleEb('eb6')"><div class="eb-num">6</div><div class="eb-title">Explicación del rol (para el selector)</div><div class="eb-chev">▼</div></div>
+    <div class="eb-body">
+      <div class="btn-group" style="margin-top:10px"><button class="btn btn-primary" onclick="genEstrat(6)">✨ Explicame este rol</button></div>
+      <div class="loading-bar" id="e6-lb"></div>
+      <div class="ai-out" id="e6-out"><div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>IA</div><button class="cbtn" onclick="cp('e6-txt')">Copiar</button></div><div class="ai-text" id="e6-txt"></div></div>
+    </div>
+  </div>
+
+  <div class="eb" id="eb7">
+    <div class="eb-head" onclick="toggleEb('eb7')"><div class="eb-num">7</div><div class="eb-title">Dónde se mueve el talento</div><div class="eb-chev">▼</div></div>
+    <div class="eb-body">
+      <div class="btn-group" style="margin-top:10px"><button class="btn btn-primary" onclick="genEstrat(7)">✨ Identificar comunidades</button></div>
+      <div class="loading-bar" id="e7-lb"></div>
+      <div class="ai-out" id="e7-out"><div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>IA</div><button class="cbtn" onclick="cp('e7-txt')">Copiar</button></div><div class="ai-text" id="e7-txt"></div></div>
+    </div>
+  </div>
+
+  <div class="eb" id="eb8">
+    <div class="eb-head" onclick="toggleEb('eb8')"><div class="eb-num">8</div><div class="eb-title">Mensajes de headhunting</div><div class="eb-chev">▼</div></div>
+    <div class="eb-body">
+      <div class="form-row" style="margin-top:10px">
+        <div class="form-group"><label class="form-label">Canal</label><select class="form-select" id="e8-canal"><option>LinkedIn InMail</option><option>WhatsApp</option><option>Ambos</option></select></div>
+        <div class="form-group"><label class="form-label">Tono</label><select class="form-select" id="e8-tono"><option>Profesional</option><option>Cercano</option><option>Directo</option></select></div>
+      </div>
+      <div class="btn-group"><button class="btn btn-primary" onclick="genEstrat(8)">✨ Generar Mensajes</button></div>
+      <div class="loading-bar" id="e8-lb"></div>
+      <div class="ai-out" id="e8-out"><div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>IA</div><button class="cbtn" onclick="cp('e8-txt')">Copiar</button></div><div class="ai-text" id="e8-txt"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREENING -->
+<div class="page" id="page-screening">
+  <div class="card">
+    <div class="card-title">Screening de CVs</div>
+    <div class="card-desc">Subí hasta 15 CVs. Podés cargar una DP específica para este análisis, independiente del módulo DP.</div>
+    <div class="form-group">
+      <label class="form-label">Familia de puesto</label>
+      <select class="form-select" id="sc-familia" onchange="onFamilia('sc-familia','sc-fhint')"></select>
+      <div class="familia-hint" id="sc-fhint"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">DP para este screening (independiente del módulo DP)</label>
+      <div class="upload-zone" id="sc-dp-zone" style="padding:12px 18px">
+        <input type="file" id="sc-dp-file" accept=".docx,.doc,.txt,.pdf" onchange="handleModuloDp(this.files[0],'sc')">
+        <div style="font-size:12px;color:var(--tx2)">📄 Subí la DP del puesto a analizar</div>
+        <div style="font-size:10px;color:var(--tx3);margin-top:2px;font-family:'DM Mono',monospace">DOCX · DOC · PDF · TXT</div>
+      </div>
+      <div class="file-list" id="sc-dp-info"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">CVs de candidatos (hasta 15)</label>
+      <div class="upload-zone" id="sc-zone">
+        <input type="file" id="sc-files" multiple accept=".pdf,.txt,.doc,.docx" onchange="handleCvs(this.files)">
+        <div class="upload-icon">📄</div>
+        <div class="upload-text">Arrastrá los CVs acá o hacé clic</div>
+        <div class="upload-sub">PDF · TXT · DOC · hasta 15 archivos</div>
+      </div>
+      <div class="file-list" id="sc-cv-list"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Criterios excluyentes (descarte si no cumple)</label>
+      <textarea class="form-textarea" id="sc-excl" placeholder="ej: Sin matrícula vigente, sin título, sin experiencia mínima..." style="min-height:55px"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Criterios de valoración positiva</label>
+      <textarea class="form-textarea" id="sc-val" placeholder="ej: Experiencia en sanatorios, inglés, posgrado..." style="min-height:55px"></textarea>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="sc-btn" onclick="generarScreening()" disabled>🔍 Analizar CVs</button>
+      <button class="btn btn-ghost" onclick="limpiarScreening()">Limpiar</button>
+    </div>
+  </div>
+  <div class="loading-bar" id="sc-lb"></div>
+  <div id="sc-results" style="display:none">
+    <div class="flx" style="margin-bottom:10px">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em">Ranking</div>
+      <div style="display:flex;gap:7px">
+        <button class="cbtn" onclick="exportXlsx()">⬇ Excel</button>
+        <button class="cbtn" onclick="exportPdf()">⬇ PDF</button>
+      </div>
+    </div>
+    <div class="cand-list" id="sc-cand-list"></div>
+    <div class="btn-group" style="margin-top:10px">
+      <button class="btn btn-primary" onclick="msgSeleccionados()">📤 Mensaje para seleccionados</button>
+    </div>
+    <div class="ai-out" id="sc-msg-out">
+      <div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>Mensaje</div><button class="cbtn" onclick="cp('sc-msg-txt')">Copiar</button></div>
+      <div class="ai-text" id="sc-msg-txt"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ENTREVISTAS -->
+<div class="page" id="page-entrevistas">
+  <div class="tabs">
+    <div class="tab active" id="ent-t1" onclick="swEnt(1)">📚 Competencias</div>
+    <div class="tab" id="ent-t2" onclick="swEnt(2)">❓ Preguntas Selector</div>
+    <div class="tab" id="ent-t3" onclick="swEnt(3)">👔 Guía para Líder</div>
+  </div>
+  <div class="card">
+    <div class="form-group">
+      <label class="form-label">Subir DP (opcional, mejora las preguntas)</label>
+      <div class="upload-zone" id="ent-dp-zone" style="padding:12px 18px">
+        <input type="file" id="ent-dp-file" accept=".docx,.doc,.txt,.pdf" onchange="handleModuloDp(this.files[0],'ent')">
+        <div style="font-size:12px;color:var(--tx2)">📄 Subí la DP del puesto</div>
+        <div style="font-size:10px;color:var(--tx3);margin-top:2px;font-family:'DM Mono',monospace">DOCX · DOC · PDF · TXT</div>
+      </div>
+      <div class="file-list" id="ent-dp-info"></div>
+    </div>
+  </div>
+  <div id="ent-p1">
+    <div class="card">
+      <div class="card-title">Guía de Competencias</div>
+      <div class="form-group"><label class="form-label">Competencias a evaluar (opcional)</label><textarea class="form-textarea" id="ent1-comp" placeholder="ej: Trabajo en equipo, orientación al paciente..." style="min-height:60px"></textarea></div>
+      <div class="form-group"><label class="form-label">Nivel de seniority</label><select class="form-select" id="ent1-nivel"><option>Trainee</option><option>Junior</option><option>Semi-Senior</option><option>Senior</option><option>Especialista</option></select></div>
+      <div class="btn-group"><button class="btn btn-primary" onclick="genEntrevista(1)">✨ Generar Guía</button></div>
+    </div>
+    <div class="loading-bar" id="ent1-lb"></div>
+    <div class="ai-out" id="ent1-out"><div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>IA</div><button class="cbtn" onclick="cp('ent1-txt')">Copiar</button></div><div class="ai-text" id="ent1-txt"></div></div>
+  </div>
+  <div id="ent-p2" style="display:none">
+    <div class="card">
+      <div class="card-title">Preguntas para la Entrevista del Selector</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="ent2-tipo"><option>Mixtas</option><option>Solo por competencias</option><option>Solo técnicas</option><option>Situacionales STAR</option></select></div>
+        <div class="form-group"><label class="form-label">Cantidad</label><select class="form-select" id="ent2-cant"><option value="8">8</option><option value="12" selected>12</option><option value="15">15</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Foco específico (opcional)</label><textarea class="form-textarea" id="ent2-foco" placeholder="ej: Profundizar en manejo de conflictos..." style="min-height:55px"></textarea></div>
+      <div class="btn-group"><button class="btn btn-primary" onclick="genEntrevista(2)">✨ Generar Preguntas</button></div>
+    </div>
+    <div class="loading-bar" id="ent2-lb"></div>
+    <div class="ai-out" id="ent2-out"><div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>IA</div><button class="cbtn" onclick="cp('ent2-txt')">Copiar</button></div><div class="ai-text" id="ent2-txt"></div></div>
+  </div>
+  <div id="ent-p3" style="display:none">
+    <div class="card">
+      <div class="card-title">Guía de Entrevista para el Líder</div>
+      <div class="form-group"><label class="form-label">Nombre del líder / cargo</label><input class="form-input" id="ent3-lider" placeholder="ej: Dr. García - Jefe de Cardiología"></div>
+      <div class="form-group"><label class="form-label">Aspectos técnicos a evaluar</label><textarea class="form-textarea" id="ent3-tec" placeholder="ej: Conocimiento de protocolos, manejo de equipos..." style="min-height:60px"></textarea></div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="genEntrevista(3)">✨ Generar Guía para Líder</button>
+        <button class="btn btn-ghost" onclick="dlPdf('ent3-txt','Guía Entrevista Líder','guia_lider')">⬇ PDF</button>
+      </div>
+    </div>
+    <div class="loading-bar" id="ent3-lb"></div>
+    <div class="ai-out" id="ent3-out"><div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>IA</div><div class="ai-btns"><button class="cbtn" onclick="cp('ent3-txt')">Copiar</button><button class="cbtn" onclick="dlPdf('ent3-txt','Guía Entrevista Líder','guia_lider')">⬇ PDF</button></div></div><div class="ai-text" id="ent3-txt"></div></div>
+  </div>
+</div>
+
+<!-- ASSESSMENT CENTER -->
+<div class="page" id="page-assessment">
+  <div class="tabs">
+    <div class="tab active" id="ac-t1" onclick="swAc(1)">🎭 Casos</div>
+    <div class="tab" id="ac-t2" onclick="swAc(2)">📋 Grilla</div>
+    <div class="tab" id="ac-t3" onclick="swAc(3)">📊 Consolidado</div>
+  </div>
+  <div class="card">
+    <div class="form-group">
+      <label class="form-label">Subir DP (opcional)</label>
+      <div class="upload-zone" id="ac-dp-zone" style="padding:12px 18px">
+        <input type="file" id="ac-dp-file" accept=".docx,.doc,.txt,.pdf" onchange="handleModuloDp(this.files[0],'ac')">
+        <div style="font-size:12px;color:var(--tx2)">📄 Subí la DP del puesto</div>
+        <div style="font-size:10px;color:var(--tx3);margin-top:2px;font-family:'DM Mono',monospace">DOCX · DOC · PDF · TXT</div>
+      </div>
+      <div class="file-list" id="ac-dp-info"></div>
+    </div>
+  </div>
+  <div id="ac-p1">
+    <div class="card">
+      <div class="card-title">Diseño de Casos y Situaciones</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Tipo de ejercicio</label><select class="form-select" id="ac1-tipo"><option>Mixto</option><option>Role Play</option><option>Bandeja de entrada</option><option>Caso grupal</option><option>Presentación</option></select></div>
+        <div class="form-group"><label class="form-label">Participantes</label><input class="form-input" id="ac1-part" type="number" value="6" min="2" max="20"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Competencias a evaluar</label><textarea class="form-textarea" id="ac1-comp" placeholder="ej: Liderazgo, comunicación, resolución de problemas..." style="min-height:55px"></textarea></div>
+      <div class="form-group"><label class="form-label">Duración del ejercicio</label><select class="form-select" id="ac1-dur"><option>30 minutos</option><option>45 minutos</option><option>60 minutos</option><option>90 minutos</option></select></div>
+      <div class="btn-group"><button class="btn btn-primary" onclick="genAc(1)">✨ Generar Casos</button></div>
+    </div>
+    <div class="loading-bar" id="ac1-lb"></div>
+    <div class="ai-out" id="ac1-out"><div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>IA</div><div class="ai-btns"><button class="cbtn" onclick="cp('ac1-txt')">Copiar</button><button class="cbtn" onclick="dlPdf('ac1-txt','AC Casos','ac_casos')">⬇ PDF</button></div></div><div class="ai-text" id="ac1-txt"></div></div>
+  </div>
+  <div id="ac-p2" style="display:none">
+    <div class="card">
+      <div class="card-title">Grilla de Observación</div>
+      <div class="form-group"><label class="form-label">Candidatos (uno por línea)</label><textarea class="form-textarea" id="ac2-cands" placeholder="Juan García&#10;María López&#10;Pedro Sánchez..." style="min-height:80px"></textarea></div>
+      <div class="form-group"><label class="form-label">Escala de evaluación</label><select class="form-select" id="ac2-escala"><option>1 a 4 (1=No observado, 4=Por encima del esperado)</option><option>1 a 5</option><option>No desarrollado / En desarrollo / Desarrollado / Muy desarrollado</option></select></div>
+      <div class="btn-group"><button class="btn btn-primary" onclick="genAc(2)">✨ Generar Grilla</button><button class="btn btn-ghost" onclick="dlPdf('ac2-txt','Grilla AC','grilla_ac')">⬇ PDF</button></div>
+    </div>
+    <div class="loading-bar" id="ac2-lb"></div>
+    <div class="ai-out" id="ac2-out"><div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>IA</div><button class="cbtn" onclick="cp('ac2-txt')">Copiar</button></div><div class="ai-text" id="ac2-txt"></div></div>
+  </div>
+  <div id="ac-p3" style="display:none">
+    <div class="card">
+      <div class="card-title">Consolidado de Resultados</div>
+      <div class="form-group"><label class="form-label">Observaciones y puntajes de los evaluadores *</label><textarea class="form-textarea" id="ac3-obs" style="min-height:130px" placeholder="Pegá las grillas completadas o describí los resultados por candidato..."></textarea></div>
+      <div class="btn-group"><button class="btn btn-primary" onclick="genAc(3)">✨ Generar Consolidado</button></div>
+    </div>
+    <div class="loading-bar" id="ac3-lb"></div>
+    <div class="ai-out" id="ac3-out">
+      <div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>IA</div>
+      <div class="ai-btns">
+        <button class="cbtn" onclick="cp('ac3-txt')">Copiar</button>
+        <button class="cbtn" onclick="dlPdf('ac3-txt','Consolidado AC','ac_consolidado')">⬇ PDF</button>
+        <button class="cbtn" onclick="genMinutaAC()">⬇ Minuta para Líder</button>
+      </div></div>
+      <div class="ai-text" id="ac3-txt"></div>
+    </div>
+  </div>
+</div>
+
+<!-- INFORME DE ENTREVISTA -->
+<div class="page" id="page-informe">
+  <div class="card">
+    <div class="card-title">Informe de Entrevista</div>
+    <div class="card-desc">Completá los datos y tus observaciones. La IA generará un informe ejecutivo de 4 secciones.</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nombre del candidato *</label><input class="form-input" id="inf-nombre" placeholder="Nombre Apellido"></div>
+      <div class="form-group"><label class="form-label">Puesto</label><input class="form-input" id="inf-puesto" placeholder="Se completa con DP activa"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Fecha de entrevista</label><input class="form-input" id="inf-fecha" type="date"></div>
+      <div class="form-group"><label class="form-label">Resultado preliminar</label><select class="form-select" id="inf-result"><option value="">Seleccioná...</option><option>Apto / Recomendado</option><option>Apto con reservas</option><option>No apto</option><option>En evaluación</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Observaciones del selector *</label><textarea class="form-textarea" id="inf-obs" style="min-height:150px" placeholder="Escribí todo lo que observaste: formación, experiencia, actitud, fortalezas, puntos débiles, motivaciones, expectativas salariales, disponibilidad, impresión general..."></textarea></div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="generarInforme()">✨ Generar Informe</button>
+      <button class="btn btn-ghost" onclick="dlPdf('inf-txt','Informe Entrevista','informe_entrevista')">⬇ PDF</button>
+    </div>
+  </div>
+  <div class="loading-bar" id="inf-lb"></div>
+  <div class="ai-out" id="inf-out">
+    <div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>IA</div>
+    <div class="ai-btns">
+      <button class="cbtn" onclick="cp('inf-txt')">Copiar</button>
+      <button class="cbtn" onclick="dlPdf('inf-txt','Informe Entrevista','informe_entrevista')">⬇ PDF</button>
+      <button class="cbtn" onclick="dlInformeWord()">⬇ Word</button>
+    </div></div>
+    <div class="ai-text" id="inf-txt"></div>
+  </div>
+</div>
+
+<!-- INFORME PSICOTÉCNICO -->
+<div class="page" id="page-psico">
+  <div class="card">
+    <div class="card-title">Informe Psicotécnico</div>
+    <div class="card-desc">Subí el informe del psicólogo/a. La IA generará un resumen ejecutivo claro para el líder, sin jerga técnica. Salida en Word y PDF.</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nombre del candidato *</label><input class="form-input" id="ps-nombre" placeholder="Nombre Apellido"></div>
+      <div class="form-group"><label class="form-label">Puesto</label><input class="form-input" id="ps-puesto" placeholder="Se completa con DP activa"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Archivo del informe psicotécnico</label>
+      <div class="upload-zone" id="ps-zone">
+        <input type="file" id="ps-file" accept=".pdf,.docx,.doc,.txt" onchange="handlePsicoFile(this.files[0])">
+        <div class="upload-icon">🧠</div>
+        <div class="upload-text">Arrastrá el informe o hacé clic</div>
+        <div class="upload-sub">PDF · DOCX · DOC · TXT</div>
+      </div>
+      <div class="file-list" id="ps-info"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Contexto del puesto para la IA (opcional)</label><textarea class="form-textarea" id="ps-ctx" placeholder="ej: Requiere alta tolerancia al estrés, trabajo en equipo, liderazgo..." style="min-height:55px"></textarea></div>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="ps-btn" onclick="generarPsico()" disabled>✨ Generar Resumen</button>
+    </div>
+  </div>
+  <div class="loading-bar" id="ps-lb"></div>
+  <div class="ai-out" id="ps-out">
+    <div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>IA</div>
+    <div class="ai-btns">
+      <button class="cbtn" onclick="cp('ps-txt')">Copiar</button>
+      <button class="cbtn" onclick="dlPsicoWord()">⬇ Word</button>
+      <button class="cbtn" onclick="dlPdf('ps-txt','Resumen Psicotécnico','psico')">⬇ PDF</button>
+    </div></div>
+    <div class="ai-text" id="ps-txt"></div>
+  </div>
+</div>
+
+<!-- FEEDBACK -->
+<div class="page" id="page-feedback">
+  <div class="card">
+    <div class="card-title">Feedback al Candidato</div>
+    <div class="card-desc">La IA redactará un mensaje empático y profesional según el resultado del proceso.</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nombre del candidato *</label><input class="form-input" id="fb-nombre" placeholder="Nombre del candidato"></div>
+      <div class="form-group"><label class="form-label">Resultado</label><select class="form-select" id="fb-result"><option value="avanza">Avanza al siguiente paso</option><option value="descartado">No continúa en el proceso</option><option value="espera">Lista de espera</option><option value="oferta">Se le realizará una oferta</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Canal</label><select class="form-select" id="fb-canal"><option>Mail</option><option>WhatsApp</option></select></div>
+      <div class="form-group"><label class="form-label">Tono</label><select class="form-select" id="fb-tono"><option>Empático y humano</option><option>Formal y profesional</option><option>Breve y directo</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Contexto / motivos</label><textarea class="form-textarea" id="fb-motivos" placeholder="ej: Búsqueda pausada, se priorizó candidato interno, falta experiencia específica..."></textarea></div>
+    <div class="btn-group"><button class="btn btn-primary" onclick="generarFeedback()">✨ Generar Feedback</button></div>
+  </div>
+  <div class="loading-bar" id="fb-lb"></div>
+  <div class="ai-out" id="fb-out"><div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>IA</div><button class="cbtn" onclick="cp('fb-txt')">Copiar</button></div><div class="ai-text" id="fb-txt"></div></div>
+</div>
+
+<!-- CARTA OFERTA -->
+<div class="page" id="page-oferta">
+  <div class="mode-toggle">
+    <div class="mode-btn active" id="of-m1" onclick="swOferta('ind')">👤 Individual</div>
+    <div class="mode-btn" id="of-m2" onclick="swOferta('mas')">👥 Masivo</div>
+  </div>
+  <div id="of-ind">
+    <div class="card">
+      <div class="card-title">Carta Oferta Individual</div>
+      <div class="card-desc">La IA generará la carta con el formato oficial de Grupo Cober.</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nombre del candidato *</label><input class="form-input" id="of-nombre" placeholder="Nombre Apellido"></div>
+        <div class="form-group"><label class="form-label">Puesto ofrecido</label><input class="form-input" id="of-puesto" placeholder="Se completa con DP activa"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Empresa / Unidad</label><select class="form-select" id="of-empresa"></select></div>
+        <div class="form-group"><label class="form-label">Área / Departamento</label><input class="form-input" id="of-area" placeholder="ej: Consultorios Externos"></div>
+      </div>
+      <div class="form-row3">
+        <div class="form-group"><label class="form-label">Remuneración bruta mensual</label><input class="form-input" id="of-salario" placeholder="$ 0.000.000"></div>
+        <div class="form-group"><label class="form-label">Fecha de ingreso</label><input class="form-input" id="of-fecha" type="date"></div>
+        <div class="form-group"><label class="form-label">Modalidad de trabajo</label><select class="form-select" id="of-modalidad"><option>Presencial</option><option>Híbrido</option><option>Remoto</option></select></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Modalidad de contratación</label>
+        <select class="form-select" id="of-contrato" onchange="togglePlazo('of')">
+          <option value="Indeterminado">Contrato indeterminado</option>
+          <option value="Plazo Fijo">Plazo fijo</option>
+          <option value="Eventual">Eventual</option>
+        </select>
+      </div>
+      <div id="of-plazo" style="display:none">
+        <div class="form-row" style="margin-bottom:13px">
+          <div class="form-group"><label class="form-label">Fecha desde</label><input class="form-input" id="of-plazo-desde" type="date"></div>
+          <div class="form-group"><label class="form-label">Fecha hasta</label><input class="form-input" id="of-plazo-hasta" type="date"></div>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Beneficios</label><textarea class="form-textarea" id="of-beneficios" placeholder="ej: Obra social Cober para grupo familiar, vacaciones, capacitaciones..." style="min-height:60px"></textarea></div>
+      <div class="form-group"><label class="form-label">Adicionales / Jornada</label><textarea class="form-textarea" id="of-adicionales" placeholder="ej: Turnos rotativos, guardias..." style="min-height:50px"></textarea></div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="generarOfertaInd()">✨ Generar Carta Oferta</button>
+      </div>
+    </div>
+    <div class="loading-bar" id="of-lb"></div>
+    <div class="ai-out" id="of-out">
+      <div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>IA</div>
+      <div class="ai-btns"><button class="cbtn" onclick="cp('of-txt')">Copiar</button><button class="cbtn" id="of-pdf-btn" onclick="dlOfertaPdf()">⬇ PDF</button></div></div>
+      <div class="ai-text" id="of-txt"></div>
+    </div>
+  </div>
+
+  <div id="of-mas" style="display:none">
+    <div class="tabs" style="margin-bottom:12px">
+      <div class="tab active" id="mas-t1" onclick="swMas('var')">💰 Salario variable</div>
+      <div class="tab" id="mas-t2" onclick="swMas('uni')">= Salario uniforme</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Datos fijos del puesto (aplican a todos)</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Puesto</label><input class="form-input" id="mas-puesto" placeholder="Se completa con DP activa"></div>
+        <div class="form-group"><label class="form-label">Empresa / Unidad</label><select class="form-select" id="mas-empresa"></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Modalidad de trabajo</label><select class="form-select" id="mas-modalidad"><option>Presencial</option><option>Híbrido</option><option>Remoto</option></select></div>
+        <div class="form-group">
+          <label class="form-label">Modalidad de contratación</label>
+          <select class="form-select" id="mas-contrato" onchange="togglePlazo('mas')">
+            <option value="Indeterminado">Contrato indeterminado</option>
+            <option value="Plazo Fijo">Plazo fijo</option>
+            <option value="Eventual">Eventual</option>
+          </select>
+        </div>
+      </div>
+      <div id="mas-plazo" style="display:none">
+        <div class="form-row" style="margin-bottom:13px">
+          <div class="form-group"><label class="form-label">Fecha desde</label><input class="form-input" id="mas-plazo-desde" type="date"></div>
+          <div class="form-group"><label class="form-label">Fecha hasta</label><input class="form-input" id="mas-plazo-hasta" type="date"></div>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Beneficios</label><textarea class="form-textarea" id="mas-beneficios" placeholder="ej: Obra social Cober..." style="min-height:55px"></textarea></div>
+      <div class="form-group"><label class="form-label">Adicionales / Jornada</label><textarea class="form-textarea" id="mas-adicionales" placeholder="ej: Turnos rotativos..." style="min-height:45px"></textarea></div>
+    </div>
+    <div id="mas-var-panel">
+      <div class="card">
+        <div class="card-title">Candidatos con datos individuales</div>
+        <div style="overflow-x:auto">
+          <table class="masivo-table" id="mas-table">
+            <thead><tr><th style="width:38%">Nombre</th><th style="width:25%">Remuneración bruta</th><th style="width:27%">Fecha de ingreso</th><th style="width:10%"></th></tr></thead>
+            <tbody id="mas-tbody">
+              <tr><td><input placeholder="Nombre Apellido" class="mn"></td><td><input placeholder="$ 0.000.000" class="ms"></td><td><input type="date" class="mf"></td><td><span onclick="rmRow(this)" style="cursor:pointer;color:var(--tx3);padding:4px 8px" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--tx3)'">✕</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="btn-group"><button class="btn btn-ghost" onclick="addRow()">+ Agregar</button></div>
+      </div>
+    </div>
+    <div id="mas-uni-panel" style="display:none">
+      <div class="card">
+        <div class="card-title">Datos uniformes para todos</div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Remuneración bruta (igual para todos)</label><input class="form-input" id="mas-sal-uni" placeholder="$ 0.000.000"></div>
+          <div class="form-group"><label class="form-label">Fecha de ingreso (igual para todos)</label><input class="form-input" id="mas-fecha-uni" type="date"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Lista de candidatos (uno por línea)</label><textarea class="form-textarea" id="mas-nombres" style="min-height:90px" placeholder="Juan García&#10;María López&#10;Pedro Sánchez..."></textarea></div>
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="generarMasivo()">✨ Generar Todas las Cartas</button>
+      <button class="btn btn-ghost" id="mas-dl-all-btn" style="display:none" onclick="descargarTodasCartas()">⬇ PDF de todas</button>
+    </div>
+    <div class="loading-bar" id="mas-lb"></div>
+    <div id="mas-output"></div>
+  </div>
+</div>
+
+<!-- SHORTLIST AL LÍDER -->
+<div class="page" id="page-lider">
+  <div class="card">
+    <div class="card-title">Shortlist · Presentación al Líder</div>
+    <div class="card-desc">Subí los informes de entrevista, psicotécnicos y/o CVs. La IA generará un informe comparativo profesional en PDF.</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nombre del líder / Hiring Manager *</label><input class="form-input" id="lid-nombre" placeholder="Nombre del líder"></div>
+      <div class="form-group"><label class="form-label">Puesto en búsqueda</label><input class="form-input" id="lid-puesto" placeholder="Se completa con DP activa"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Documentos de candidatos * (informes, psicos, CVs)</label>
+      <div class="upload-zone" id="lid-zone">
+        <input type="file" id="lid-files" multiple accept=".pdf,.docx,.doc,.txt" onchange="handleShortlist(this.files)">
+        <div class="upload-icon">📁</div>
+        <div class="upload-text">Arrastrá los archivos o hacé clic</div>
+        <div class="upload-sub">PDF · DOCX · DOC · TXT · múltiples archivos</div>
+      </div>
+      <div class="file-list" id="lid-file-list"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Observaciones / recomendaciones del selector</label><textarea class="form-textarea" id="lid-obs" placeholder="ej: Recomiendo a Juan García. María López tiene potencial pero necesita desarrollo. Propongo entrevista esta semana..."></textarea></div>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="lid-btn" onclick="generarShortlist()" disabled>✨ Generar Informe Comparativo</button>
+      <button class="btn btn-ghost" onclick="limpiarShortlist()">Limpiar</button>
+    </div>
+  </div>
+  <div class="loading-bar" id="lid-lb"></div>
+  <div class="ai-out" id="lid-out">
+    <div class="ai-head"><div class="ai-badge"><div class="ai-dot"></div>Informe IA</div>
+    <div class="ai-btns">
+      <button class="cbtn" onclick="cp('lid-txt')">Copiar</button>
+      <button class="cbtn" id="lid-pdf-btn" style="display:none" onclick="dlPdf('lid-txt','Shortlist Candidatos','shortlist')">⬇ PDF Shortlist</button>
+    </div></div>
+    <div class="ai-text" id="lid-txt"></div>
+  </div>
+</div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+<script>
+// ═══════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════
+const PWD = 'cober2025';
+const OKEY = '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';
+const OURL = 'https://api.openai.com/v1/chat/completions';
+
+// ═══════════════════════════════════════════
+// DATOS EXCEL DE SEGUIMIENTO
+// ═══════════════════════════════════════════
+const XL = {
+  familias: [
+    { n:'Asistencial/Enfermería', h:'Enfermero/a (todas las especialidades), Instrumentador/a, Técnico/a en prácticas' },
+    { n:'Asistencial/Médicos', h:'Médico/a, Residente, Bioquímico/a, Kinesiólogo/a, Nutricionista, Psicólogo/a' },
+    { n:'Asistencial/Otros', h:'Técnico/a de Laboratorio, Hemoterapia, Hemodinamia, Bioingeniería, Admisionista, Camillero/a, Mucamo/a' },
+    { n:'Administrativo/a', h:'Administrativo/a, Recepcionista, Secretario/a, Facturista, Liquidador/a de sueldos, Operador de Call Center' },
+    { n:'Analista', h:'Analista de Finanzas, Compras, Marketing, Datos, Procesos, RRHH, CX, Contable, Liquidador/a' },
+    { n:'Analista IT', h:'Programador/a, Desarrollador/a, Soporte Técnico, Analista de datos, Digital Manager, Ing. IA' },
+    { n:'Especialista', h:'HRBP, Brand Manager, Analista Sr., especialistas con expertise profundo sin gente a cargo' },
+    { n:'Comercial, ventas y cobranzas', h:'Vendedor/a, Ejecutivo Comercial, Cobrador/a, Operador Call Center, Team Leader' },
+    { n:'Servicios Generales', h:'Mucamo/a, Limpieza, Portero, Cadete/a, Chofer, Cocinero/a, Cajero/a, Mensajero' },
+    { n:'Mantenimiento y obras', h:'Oficial, Albañil, Carpintero/a, Operario/a, Peón, Intendente' },
+    { n:'Liderazgo', h:'Cualquier puesto con gente a cargo: Jefe/a, Supervisor/a, Coordinador/a, Gerente/a, Director/a, Referente, HRBP líder, Líder de Change, Líder de Gestión de Personas, Jefe de Residentes, Director Técnico, Jefe de Mantenimiento, Coord. de Atracción de Talento, Referente de Instrumentación' },
+    { n:'Pasante/Becario', h:'Pasante, Becario/a, Adscripto/a' },
+  ],
+  unidades: ['SANATORIO COLEGIALES','CMD','PREPAGA','CORPO','CMV','DROGUERÍA','ARGIL','FARMACIA','LABBO'],
+  selectores: ['Franco','Ema','Jose','Fer','Juanpi','Dani'],
+  motivos: ['Desvinculación empresa','Renuncia','Crecimiento del área','Jubilación','Nuevo proyecto','Reorganización del área','Movimiento interno','Licencia','Sobre cápita'],
+  tiposVac: ['Apertura de puesto','Reemplazo'],
+  fuentes: ['LinkedIn','Computrabajo','Referidos','Base general','Búsqueda Interna','Promoción','Consultora'],
+  dificultad: ['Alta','Media','Baja'],
+  prioridad: ['Alta','Media','Baja'],
+  status: ['Relevamiento de Perfil','Publicación/Analizando CVs','Preselección/Screening','Assessment Center','Entrevista Atracción de Talento','Entrevista Hiring Manager','Preocupacional','Psicotécnico','Evaluación técnica','Negociando condiciones','Carta Oferta','Ingreso','StandBy','Cancelada'],
+};
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+const S = {
+  dpNombre: null,
+  dpTexto: null,
+  cvFiles: [],
+  cvTexts: [],
+  psicoFile: null,
+  psicoText: null,
+  shortlistFiles: [],
+  moduleDp: {}, // keyed by module prefix
+  lastOfertaNombre: '',
+  lastPsicoNombre: '',
+};
+
+// ═══════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════
+function doLogin() {
+  if (document.getElementById('login-pwd').value === PWD) {
+    sessionStorage.setItem('ca','1');
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    initApp();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+  }
+}
+if (sessionStorage.getItem('ca') === '1') {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  setTimeout(initApp, 0);
+}
+
+function initApp() {
+  fillSelects();
+  const today = new Date().toISOString().slice(0,10);
+  ['ap-fecha','inf-fecha','of-fecha','mas-fecha-uni'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.value) el.value = today;
+  });
+  refreshDpPill();
+}
+
+// ═══════════════════════════════════════════
+// FILL SELECTS FROM EXCEL DATA
+// ═══════════════════════════════════════════
+function fillSelects() {
+  // familias
+  ['ap-familia','dp-familia','es-familia','sc-familia'].forEach(id => fillFamilia(id));
+  // unidades
+  ['ap-unidad','dp-unidad','es-unidad','of-empresa','mas-empresa'].forEach(id => fillOpts(id, XL.unidades));
+  // otros
+  fillOpts('ap-selector', XL.selectores);
+  fillOpts('ap-tipo-vac', XL.tiposVac);
+  fillOpts('ap-motivo', XL.motivos);
+}
+
+function fillFamilia(id) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Seleccioná familia de puesto...</option>';
+  XL.familias.forEach(f => {
+    const o = document.createElement('option');
+    o.value = f.n; o.textContent = f.n;
+    sel.appendChild(o);
+  });
+}
+
+function fillOpts(id, arr, blank = true) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  sel.innerHTML = blank ? '<option value="">Seleccioná...</option>' : '';
+  arr.forEach(v => {
+    const o = document.createElement('option');
+    o.value = v; o.textContent = v;
+    sel.appendChild(o);
+  });
+}
+
+function onFamilia(famId, hintId) {
+  const val = document.getElementById(famId)?.value;
+  const hint = document.getElementById(hintId);
+  const fam = XL.familias.find(f => f.n === val);
+  if (hint) {
+    hint.textContent = fam ? 'Incluye: ' + fam.h : '';
+    hint.style.display = fam ? 'block' : 'none';
+  }
+}
+
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
+const pageMeta = {
+  home: ['Inicio','Grupo Cober · Tool de Atracción de Talento'],
+  apertura: ['Apertura de Vacante','Registrá la solicitud del líder'],
+  dp: ['Descripción de Puesto','Generá o cargá la DP con formato Cober'],
+  estrategia: ['Estrategia de Atracción','Research, avisos, booleanas, flyer y headhunting'],
+  screening: ['Screening de CVs','Análisis y ranking con IA'],
+  entrevistas: ['Preparación de Entrevistas','Guías de competencias y preguntas'],
+  assessment: ['Assessment Center','Casos, grillas y consolidado'],
+  informe: ['Informe de Entrevista','Informe ejecutivo desde tus observaciones'],
+  psico: ['Informe Psicotécnico','Resumen para el líder sin jerga técnica'],
+  feedback: ['Feedback al Candidato','Mensajes empáticos por mail o WhatsApp'],
+  oferta: ['Carta Oferta','Individual o masiva · Indeterminado, plazo fijo o eventual'],
+  lider: ['Shortlist al Líder','PDF comparativo de candidatos'],
+};
+
+function nav(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page)?.classList.add('active');
+  document.querySelector('[data-page="' + page + '"]')?.classList.add('active');
+  const m = pageMeta[page] || ['',''];
+  document.getElementById('tb-t').textContent = m[0];
+  document.getElementById('tb-d').textContent = m[1];
+  refreshDpPill();
+  fillSelects();
+
+  // sync DP name into puesto fields
+  if (S.dpNombre) {
+    ['inf-puesto','of-puesto','mas-puesto','ps-puesto','lid-puesto'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.value) el.placeholder = S.dpNombre;
+    });
+    const ep = document.getElementById('es-puesto');
+    if (ep && !ep.value) ep.value = S.dpNombre;
+  }
+
+  // alerts
+  const eaAlert = document.getElementById('estrat-alert');
+  if (eaAlert) eaAlert.style.display = S.dpNombre ? 'none' : 'flex';
+}
+
+function refreshDpPill() {
+  const pill = document.getElementById('dp-pill');
+  const ha = document.getElementById('home-dp-alert');
+  const hn = document.getElementById('home-dp-name');
+  if (S.dpNombre) {
+    pill.style.display = 'flex';
+    document.getElementById('dp-pill-txt').textContent = S.dpNombre;
+    if (ha) { ha.style.display = 'flex'; hn.textContent = S.dpNombre; }
+  } else {
+    pill.style.display = 'none';
+    if (ha) ha.style.display = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════
+// AI API (OpenAI)
+// ═══════════════════════════════════════════
+async function ai(prompt, maxTok = 2048) {
+  const r = await fetch(OURL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + OKEY },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: maxTok
+    })
+  });
+  const d = await r.json();
+  if (d.choices?.[0]) return d.choices[0].message.content;
+  throw new Error(d.error?.message || 'Error OpenAI API');
+}
+
+function lb(id, on) { document.getElementById(id)?.classList.toggle('on', on); }
+function mdToHtml(text) {
+  return text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/^#{3}\s+(.+)$/gm,'<span style="font-size:12px;font-weight:700;color:var(--ac);text-transform:uppercase;letter-spacing:.06em;display:block;margin:14px 0 4px">$1</span>')
+    .replace(/^#{2}\s+(.+)$/gm,'<span style="font-size:13px;font-weight:700;display:block;margin:16px 0 6px;border-bottom:1px solid var(--b1);padding-bottom:4px">$1</span>')
+    .replace(/^#{1}\s+(.+)$/gm,'<span style="font-size:14px;font-weight:800;display:block;margin:18px 0 8px">$1</span>')
+    .replace(/^[-─━][-─━][-─━]+$/gm,'<hr style="border:none;border-top:1px solid var(--b2);margin:12px 0">')
+    .replace(/^\* (.+)$/gm,'<span style="display:block;padding-left:14px;margin:2px 0">• $1</span>')
+    .replace(/^• (.+)$/gm,'<span style="display:block;padding-left:14px;margin:2px 0">• $1</span>')
+    .replace(/\n/g,'<br>');
+}
+
+function showOut(outId, txtId, text) {
+  document.getElementById(outId)?.classList.add('on');
+  const el = document.getElementById(txtId);
+  el.innerHTML = mdToHtml(text);
+  el._rawText = text; // store raw for copy/download
+}
+function cp(id) {
+  const el = document.getElementById(id);
+  const text = el?._rawText || el?.textContent || '';
+  navigator.clipboard.writeText(text);
+  const btn = event.target; const orig = btn.textContent;
+  btn.textContent = '✓'; setTimeout(() => btn.textContent = orig, 1500);
+}
+async function withLb(lbId, fn) {
+  lb(lbId, true);
+  try { await fn(); } catch(e) { alert('Error: ' + e.message); }
+  finally { lb(lbId, false); }
+}
+
+function getDp(prefix) {
+  if (prefix && S.moduleDp[prefix]) return 'DESCRIPCIÓN DE PUESTO:\n' + S.moduleDp[prefix].slice(0, 2500);
+  if (S.dpTexto) return 'DESCRIPCIÓN DE PUESTO:\n' + S.dpTexto.slice(0, 2500);
+  if (S.dpNombre) return 'PUESTO: ' + S.dpNombre;
+  return '';
+}
+
+// ═══════════════════════════════════════════
+// FILE HANDLERS
+// ═══════════════════════════════════════════
+async function readFile(file) {
+  if (!file) return '';
+  try {
+    if ((file.name.endsWith('.docx') || file.name.endsWith('.doc')) && window.mammoth) {
+      const ab = await file.arrayBuffer();
+      const r = await mammoth.extractRawText({ arrayBuffer: ab });
+      return r.value || '';
+    }
+    return await file.text();
+  } catch(e) { return '[No se pudo leer: ' + file.name + ']'; }
+}
+
+function fileItem(name, size, onRemove) {
+  const div = document.createElement('div');
+  div.className = 'file-item';
+  div.innerHTML = '<span class="fi-icon">📄</span><span class="fi-name">' + name + '</span><span class="fi-size">' + (size/1024).toFixed(1) + ' KB</span>';
+  if (onRemove) {
+    const rm = document.createElement('span');
+    rm.className = 'fi-rm'; rm.textContent = '✕';
+    rm.onclick = onRemove;
+    div.appendChild(rm);
+  }
+  return div;
+}
+
+async function handleModuloDp(file, prefix) {
+  if (!file) return;
+  const infoId = prefix + '-dp-info';
+  const list = document.getElementById(infoId);
+  if (list) { list.innerHTML = ''; list.appendChild(fileItem(file.name, file.size)); }
+  const text = await readFile(file);
+  S.moduleDp[prefix] = text.slice(0, 3000);
+}
+
+// ═══════════════════════════════════════════
+// APERTURA DE VACANTE
+// ═══════════════════════════════════════════
+async function generarApertura() {
+  const familia = document.getElementById('ap-familia').value;
+  const puesto = document.getElementById('ap-puesto-libre').value.trim();
+  if (!puesto && !familia) return alert('Seleccioná la familia de puesto');
+
+  const unidad = document.getElementById('ap-unidad').value;
+  const selector = document.getElementById('ap-selector').value;
+  const tipoVac = document.getElementById('ap-tipo-vac').value;
+  const motivo = document.getElementById('ap-motivo').value;
+  const dificultad = document.getElementById('ap-dificultad').value;
+  const prioridad = document.getElementById('ap-prioridad').value;
+  const fecha = document.getElementById('ap-fecha').value;
+  const cantidad = document.getElementById('ap-cantidad').value;
+  const lider = document.getElementById('ap-lider').value;
+  const fuente = document.getElementById('ap-fuente').value;
+  const status = document.getElementById('ap-status').value;
+  const contexto = document.getElementById('ap-contexto').value;
+  const brief = document.getElementById('ap-brief').checked;
+  const dpCtx = getDp('ap');
+
+  await withLb('ap-lb', async () => {
+    const prompt = `Sos especialista en Talent Acquisition. Generá un resumen de apertura de vacante profesional para uso interno en Grupo Cober.
+
+DATOS:
+${familia ? 'Familia de puesto: ' + familia : ''}
+${puesto ? 'Puesto: ' + puesto : ''}
+${unidad ? 'Unidad de negocio: ' + unidad : ''}
+${selector ? 'Selector asignado: ' + selector : ''}
+${tipoVac ? 'Tipo de vacante: ' + tipoVac : ''}
+${motivo ? 'Motivo: ' + motivo : ''}
+${dificultad ? 'Dificultad: ' + dificultad : ''}
+${prioridad ? 'Prioridad: ' + prioridad : ''}
+${fecha ? 'Fecha de apertura: ' + fecha : ''}
+${cantidad ? 'Cantidad de posiciones: ' + cantidad : ''}
+${lider ? 'Líder/Hiring Manager: ' + lider : ''}
+${fuente ? 'Fuente de selección: ' + fuente : ''}
+${status ? 'Status del proceso: ' + status : ''}
+${dpCtx}
+${contexto ? 'Contexto adicional: ' + contexto : ''}
+Empresa: Grupo Cober (grupo de salud en Argentina)
+
+Generá:
+1. RESUMEN DE APERTURA con todos los datos clave
+2. PERFIL OBJETIVO (qué buscar, competencias clave)
+3. PLAN DE ACCIÓN SUGERIDO (primeros pasos)
+${brief ? '4. BRIEF PARA CONSULTORA/LÍDER (versión para compartir, clara y concisa)' : ''}
+
+Formato profesional en español.`;
+
+    const result = await ai(prompt);
+    showOut('ap-out', 'ap-txt', result);
+  });
+}
+
+// ═══════════════════════════════════════════
+// DP
+// ═══════════════════════════════════════════
+function swDp(tab) {
+  document.getElementById('dp-form-panel').style.display = tab === 'form' ? 'block' : 'none';
+  document.getElementById('dp-upload-panel').style.display = tab === 'upload' ? 'block' : 'none';
+  document.getElementById('dp-tab1').classList.toggle('active', tab === 'form');
+  document.getElementById('dp-tab2').classList.toggle('active', tab === 'upload');
+}
+
+async function generarDP() {
+  const puesto = document.getElementById('dp-puesto').value.trim();
+  if (!puesto) return alert('Ingresá el nombre del puesto');
+  const unidad = document.getElementById('dp-unidad').value;
+  const reporta = document.getElementById('dp-reporta').value;
+  const gente = document.getElementById('dp-gente').value;
+  const objetivo = document.getElementById('dp-objetivo').value;
+  const tareas = document.getElementById('dp-tareas').value;
+  const formacion = document.getElementById('dp-formacion').value;
+  const experiencia = document.getElementById('dp-experiencia').value;
+  const conocimientos = document.getElementById('dp-conocimientos').value;
+
+  await withLb('dp-lb', async () => {
+    const prompt = `Generá una Descripción de Puesto con ESTE FORMATO EXACTO de Grupo Cober:
+
+NOMBRE DE LA EMPRESA: ${unidad || 'Grupo Cober'}
+NOMBRE DEL CARGO: ${puesto}
+ÁREA EN QUE SE DESEMPEÑA: ${unidad || ''}
+REPORTA A: ${reporta || ''}
+
+OBJETIVOS DEL CARGO:
+[2-3 oraciones sobre el propósito del puesto]
+
+DESCRIPCIÓN DE TAREAS:
+* [tarea 1]
+* [tarea 2]
+[mínimo 10 tareas con * al inicio]
+
+RESPONSABILIDADES:
+* [responsabilidad 1]
+[mínimo 5 con * al inicio]
+
+COMPETENCIAS:
+Genéricas: [4-5 competencias separadas por coma]
+Específicas: [3-4 competencias del rol]
+
+EXPERIENCIA LABORAL: ${experiencia || '[describí la experiencia]'}
+
+GENTE A CARGO: ${gente}
+
+CONOCIMIENTO TÉCNICO:
+${conocimientos || '[conocimientos necesarios]'}
+
+---
+FIRMA DEL COLABORADOR: ___________________________
+---
+
+DATOS PROVISTOS:
+Puesto: ${puesto}
+${objetivo ? 'Objetivo/Contexto: ' + objetivo : ''}
+${tareas ? 'Tareas indicadas: ' + tareas : ''}
+${formacion ? 'Formación: ' + formacion : ''}
+Empresa: Grupo Cober (sector salud Argentina)
+
+Seguí el formato exacto. Usá * para listas.`;
+
+    const result = await ai(prompt, 3000);
+    showOut('dp-out', 'dp-txt', result);
+    S._dpPendiente = { nombre: puesto, texto: result };
+  });
+}
+
+function guardarDP() {
+  const _dpEl = document.getElementById('dp-txt');
+  const texto = _dpEl?._rawText || _dpEl?.textContent || '';
+  const nombre = S._dpPendiente?.nombre || document.getElementById('dp-puesto').value || 'DP activa';
+  S.dpNombre = nombre; S.dpTexto = texto;
+  refreshDpPill();
+  const btn = event.target; btn.textContent = '✓ Guardada';
+  setTimeout(() => btn.textContent = '✓ Usar esta DP', 2000);
+}
+
+function limpiarDP() {
+  ['dp-puesto','dp-objetivo','dp-tareas','dp-conocimientos','dp-reporta','dp-formacion','dp-experiencia'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('dp-out').classList.remove('on');
+}
+
+let dpUploadFile = null;
+function handleDpUpload(file) {
+  if (!file) return;
+  dpUploadFile = file;
+  const list = document.getElementById('dp-up-info');
+  list.innerHTML = ''; list.appendChild(fileItem(file.name, file.size));
+  document.getElementById('dp-up-btns').style.display = 'flex';
+}
+async function procesarDpUpload() {
+  if (!dpUploadFile) return;
+  await withLb('dp-lb', async () => {
+    const text = await readFile(dpUploadFile);
+    const prompt = `Reformateá esta Descripción de Puesto usando el formato estándar de Grupo Cober:
+- NOMBRE DE LA EMPRESA / CARGO / ÁREA / REPORTA A al inicio
+- OBJETIVOS DEL CARGO
+- DESCRIPCIÓN DE TAREAS (con *)
+- RESPONSABILIDADES (con *)
+- COMPETENCIAS (Genéricas + Específicas)
+- EXPERIENCIA LABORAL
+- GENTE A CARGO
+- CONOCIMIENTO TÉCNICO
+- FIRMA DEL COLABORADOR al final
+
+DOCUMENTO ORIGINAL:
+${text.slice(0, 4000)}`;
+    const result = await ai(prompt, 3000);
+    showOut('dp-out', 'dp-txt', result);
+    // extract puesto name
+    const lines = text.split('\n');
+    let nombre = dpUploadFile.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
+    for (const l of lines) {
+      if (/cargo|puesto/i.test(l)) { const m = l.match(/:\s*(.+)/); if (m) { nombre = m[1].trim(); break; } }
+    }
+    S._dpPendiente = { nombre, texto: result };
+  });
+}
+function limpiarDpUpload() {
+  dpUploadFile = null;
+  document.getElementById('dp-file').value = '';
+  document.getElementById('dp-up-info').innerHTML = '';
+  document.getElementById('dp-up-btns').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════
+// ESTRATEGIA
+// ═══════════════════════════════════════════
+function toggleEb(id) { document.getElementById(id)?.classList.toggle('open'); }
+
+async function genEstrat(n) {
+  const puesto = document.getElementById('es-puesto').value || document.getElementById('es-puesto-sel').value || S.dpNombre || 'el puesto';
+  const nivel = document.getElementById('es-nivel').value;
+  const unidad = document.getElementById('es-unidad').value;
+  const dp = getDp('es');
+
+  const prompts = {
+    1: () => {
+      const extra = document.getElementById('e1-extra').value;
+      return `Sos especialista en TA y mercado laboral argentino. Generá research de mercado para:
+Puesto: ${puesto} · Nivel: ${nivel} · ${unidad ? 'Unidad: ' + unidad : ''}
+${dp}
+${extra ? 'Contexto: ' + extra : ''}
+Empresa: Grupo Cober (sector salud Argentina)
+
+Incluí:
+1. PANORAMA DEL MERCADO LABORAL para este perfil en Argentina
+2. DEMANDA Y DISPONIBILIDAD del talento (escaso, disponible, muy buscado)
+3. PRINCIPALES EMPLEADORES que buscan estos perfiles en el sector salud
+4. TENDENCIAS DEL MERCADO para este rol
+5. PERFIL DEL CANDIDATO TÍPICO (formación, experiencia, motivaciones)
+6. VENTAJAS COMPETITIVAS que puede ofrecer Grupo Cober para atraer este talento`;
+    },
+    2: () => `Analizá el perfil y recomendá la mejor estrategia de búsqueda.
+Puesto: ${puesto} · Nivel: ${nivel}
+${dp}
+Empresa: Grupo Cober (sector salud Argentina)
+
+Recomendá:
+1. TIPO DE BÚSQUEDA (publicación abierta, headhunting, mixta, referidos)
+2. JUSTIFICACIÓN
+3. CANALES ESPECÍFICOS con prioridad
+4. TIEMPOS ESTIMADOS
+5. RIESGOS Y CONTINGENCIAS`,
+
+    3: () => {
+      const canal = document.getElementById('e3-canal').value;
+      const tono = document.getElementById('e3-tono').value;
+      const extra = document.getElementById('e3-extra').value;
+      return `Generá un aviso de empleo atractivo para ${canal}.
+${dp || 'Puesto: ' + puesto}
+Nivel: ${nivel} · Tono: ${tono}
+${extra ? 'Instrucciones: ' + extra : ''}
+Empresa: Grupo Cober (sector salud Argentina)
+
+El aviso debe:
+- Ser atractivo y motivar a postularse
+- Adaptado al canal ${canal}
+- Incluir: título atractivo, presentación del grupo, descripción del rol, beneficios, perfil, llamado a la acción
+- Máximo 400 palabras en español argentino
+${canal !== 'WhatsApp' ? '- Usar emojis apropiados para LinkedIn' : ''}`;
+    },
+
+    4: () => {
+      const estilo = document.getElementById('e4-estilo').value;
+      return `Generá el contenido completo para un flyer de búsqueda laboral para ${puesto} en Grupo Cober.
+${dp || ''}
+Nivel: ${nivel}
+${estilo ? 'Estilo visual: ' + estilo : ''}
+
+El flyer debe tener estas secciones claramente separadas (listo para copiar en Canva o similar):
+
+🏷️ TITULAR PRINCIPAL (máx 8 palabras, impactante)
+📍 EMPRESA: Grupo Cober + unidad ${unidad || ''}
+💼 BUSCAMOS: [puesto en 1 línea]
+✅ LO QUE OFRECEMOS: [3-4 bullets cortos con beneficios clave]
+📋 REQUISITOS: [3-4 bullets con lo imprescindible]
+📩 CÓMO POSTULARSE: [instrucción simple]
+🌐 [Hashtags sugeridos para LinkedIn]
+
+Hacé el contenido atractivo, conciso y visualmente escaneable. Usá emojis como guías visuales.`;
+    },
+
+    5: () => {
+      const plat = document.getElementById('e5-plat').value;
+      return `Generá strings booleanas para encontrar candidatos para ${puesto} (${nivel}).
+${dp}
+Plataforma: ${plat}
+
+Generá:
+1. STRING BOOLEANA PRINCIPAL (completa, con OR/AND/NOT)
+2. STRING SIMPLIFICADA (para búsquedas rápidas)
+3. VARIANTES EN INGLÉS (términos del sector pueden estar en inglés)
+4. EXPLICACIÓN SIMPLE de cómo usar cada string
+5. TÉRMINOS CLAVE a incluir o excluir y por qué`;
+    },
+
+    6: () => `Explicá de forma simple y práctica el rol de ${puesto} para un selector generalista.
+${dp}
+
+Explicá:
+1. QUÉ HACE ESTA PERSONA en el día a día (lenguaje simple, sin jerga)
+2. TÉRMINOS TÉCNICOS IMPORTANTES que el selector debe conocer
+3. QUÉ PREGUNTAR en la entrevista (preguntas clave)
+4. RED FLAGS (señales de un candidato débil)
+5. GREEN FLAGS (señales de un candidato fuerte)
+6. CÓMO PRESENTAR EL PUESTO de forma atractiva
+
+Usá lenguaje coloquial y ejemplos concretos.`,
+
+    7: () => `Identificá dónde se mueve el talento para ${puesto} (${nivel}) en Argentina.
+${dp}
+
+Identificá:
+1. PLATAFORMAS DIGITALES
+2. COMUNIDADES Y GRUPOS (Facebook, WhatsApp, Telegram, foros)
+3. INSTITUCIONES relevantes (universidades, colegios, asociaciones)
+4. EVENTOS Y CONGRESOS del sector
+5. REDES PROFESIONALES del sector salud en Argentina
+6. ESTRATEGIA DE BÚSQUEDA PASIVA`,
+
+    8: () => {
+      const canal = document.getElementById('e8-canal').value;
+      const tono = document.getElementById('e8-tono').value;
+      return `Generá mensajes de headhunting para contactar candidatos pasivos para ${puesto} (${nivel}).
+${dp}
+Canal: ${canal} · Tono: ${tono}
+Empresa: Grupo Cober (sector salud Argentina)
+
+Generá:
+1. MENSAJE INICIAL de primer contacto
+2. MENSAJE DE SEGUIMIENTO (sin respuesta, 72hs después)
+3. MENSAJE DE CIERRE si muestra interés
+4. TIPS para personalizar
+
+Mensajes breves, que generen curiosidad. Usar [NOMBRE] como placeholder.`;
+    }
+  };
+
+  await withLb('e' + n + '-lb', async () => {
+    const result = await ai(prompts[n](), 2200);
+    showOut('e' + n + '-out', 'e' + n + '-txt', result);
+  });
+}
+
+// ═══════════════════════════════════════════
+// SCREENING
+// ═══════════════════════════════════════════
+let cvReadTexts = [];
+
+function handleCvs(files) {
+  const newFiles = Array.from(files);
+  S.cvFiles = [...S.cvFiles, ...newFiles].slice(0, 15);
+  cvReadTexts = new Array(S.cvFiles.length);
+  const list = document.getElementById('sc-cv-list');
+  list.innerHTML = '';
+  S.cvFiles.forEach((f, i) => {
+    list.appendChild(fileItem(f.name, f.size, () => {
+      S.cvFiles.splice(i, 1);
+      cvReadTexts.splice(i, 1);
+      handleCvs([]);
+    }));
+    if (!cvReadTexts[i]) {
+      const reader = new FileReader();
+      reader.onload = e => { cvReadTexts[i] = { name: f.name, text: (e.target.result || '').slice(0, 2500) }; };
+      reader.onerror = () => { cvReadTexts[i] = { name: f.name, text: '[No se pudo leer]' }; };
+      reader.readAsText(f);
+    }
+  });
+  document.getElementById('sc-btn').disabled = S.cvFiles.length === 0;
+  // reset input so same file can be re-added
+  document.getElementById('sc-files').value = '';
+}
+
+async function generarScreening() {
+  if (cvReadTexts.length === 0) return alert('Esperá que carguen los archivos');
+  const dp = getDp('sc');
+  const familia = document.getElementById('sc-familia').value;
+  const excl = document.getElementById('sc-excl').value;
+  const val = document.getElementById('sc-val').value;
+  const cvsText = cvReadTexts.map((cv, i) => '--- CV ' + (i+1) + ': ' + cv.name + ' ---\n' + cv.text).join('\n\n');
+
+  await withLb('sc-lb', async () => {
+    const prompt = `Analizá estos CVs y devolvé SOLO JSON válido sin texto adicional.
+
+BÚSQUEDA:
+${dp || (familia ? 'Familia: ' + familia : 'Puesto no especificado')}
+${excl ? 'EXCLUYENTES (descarte si no cumple): ' + excl : ''}
+${val ? 'CRITERIOS POSITIVOS: ' + val : ''}
+
+CVs:
+${cvsText}
+
+Devolvé exactamente este JSON (sin markdown, sin texto adicional):
+{"candidatos":[{"nombre":"nombre del candidato","archivo":"nombre archivo","score":85,"nivel":"alto","excluido":false,"motivo_exclusion":"","resumen":"síntesis 2-3 líneas","fortalezas":"fortalezas principales","debilidades":"aspectos débiles"}]}
+
+nivel: "alto" (75-100), "medio" (50-74), "bajo" (0-49). excluido: true si no cumple excluyentes. Ordenar de mayor a menor score.`;
+
+    const result = await ai(prompt, 3000);
+    try {
+      const clean = result.replace(/[\u0060]{3}json|[\u0060]{3}/g, '').trim();
+      const data = JSON.parse(clean);
+      S.screeningData = data.candidatos;
+      renderCandidatos(data.candidatos);
+    } catch(e) {
+      alert('Error al parsear. Intentá con menos CVs o CVs más simples.');
+    }
+  });
+}
+
+function renderCandidatos(cands) {
+  const list = document.getElementById('sc-cand-list');
+  list.innerHTML = '';
+  cands.forEach((c, i) => {
+    const rkCls = c.excluido ? 'rkn' : (i===0?'rk1':i===1?'rk2':i===2?'rk3':'rkn');
+    const scCls = c.score >= 75 ? 'sh' : c.score >= 50 ? 'sm' : 'sl';
+    const el = document.createElement('div');
+    el.className = 'cand-card';
+    el.innerHTML = (c.excluido ? '<div style="width:15px"></div>' : '<input type="checkbox" class="cand-check" data-n="' + c.nombre + '" data-r="' + (c.resumen||'').replace(/"/g,'') + '">') +
+      '<div class="cand-rank ' + rkCls + '">' + (c.excluido ? '✕' : i+1) + '</div>' +
+      '<div class="cand-info">' +
+        '<div class="cand-name">' + c.nombre + (c.excluido ? ' <span class="tag tr">excluido</span>' : '') + '</div>' +
+        '<div class="cand-meta">' + c.archivo + ' · ' + c.score + '/100</div>' +
+        '<div class="score-bar"><div class="score-fill ' + scCls + '" style="width:' + c.score + '%"></div></div>' +
+        '<div class="cand-reason">' +
+          (c.excluido ? '<strong>Motivo:</strong> ' + c.motivo_exclusion + '<br>' : '') +
+          '<strong>Perfil:</strong> ' + c.resumen + '<br>' +
+          (!c.excluido ? '<strong>✓</strong> ' + c.fortalezas + '<br><strong>○</strong> ' + c.debilidades : '') +
+        '</div>' +
+      '</div>' +
+      '<span class="tag ' + (c.excluido?'tr':c.nivel==='alto'?'tg':c.nivel==='medio'?'ty':'tb') + '">' + (c.excluido?'excluido':c.nivel) + '</span>';
+    list.appendChild(el);
+  });
+  document.getElementById('sc-results').style.display = 'block';
+}
+
+function exportXlsx() {
+  if (!S.screeningData?.length) return;
+  const ws = XLSX.utils.json_to_sheet(S.screeningData.map(c => ({
+    Nombre: c.nombre, Archivo: c.archivo, Score: c.score, Nivel: c.nivel,
+    Excluido: c.excluido?'Sí':'No', Resumen: c.resumen, Fortalezas: c.fortalezas, Debilidades: c.debilidades
+  })));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Ranking');
+  XLSX.writeFile(wb, 'ranking_' + new Date().toISOString().slice(0,10) + '.xlsx');
+}
+
+function exportPdf() {
+  if (!S.screeningData?.length) return;
+  let text = 'RANKING DE CANDIDATOS · GRUPO COBER\n';
+  text += 'Puesto: ' + (S.dpNombre || 'Sin especificar') + '\n';
+  text += 'Fecha: ' + new Date().toLocaleDateString('es-AR') + '\n\n';
+  S.screeningData.forEach((c, i) => {
+    text += (i+1) + '. ' + c.nombre + ' — Score: ' + c.score + '/100 (' + c.nivel + ')\n';
+    text += 'Perfil: ' + c.resumen + '\n';
+    if (!c.excluido) text += '✓ ' + c.fortalezas + '\n';
+    text += '\n';
+  });
+  dlPdfText('Ranking Candidatos', text, 'ranking');
+}
+
+async function msgSeleccionados() {
+  const checks = document.querySelectorAll('.cand-check:checked');
+  if (!checks.length) return alert('Seleccioná al menos un candidato');
+  const sels = Array.from(checks).map(c => c.dataset.n + ': ' + c.dataset.r).join('\n');
+  await withLb('sc-lb', async () => {
+    const result = await ai('Generá un mensaje en español para invitar a una entrevista. Puesto: ' + (S.dpNombre||'el puesto') + '. Empresa: Grupo Cober. Usar [NOMBRE] como placeholder. Breve, cordial, profesional. Candidatos: ' + sels, 500);
+    showOut('sc-msg-out', 'sc-msg-txt', result);
+  });
+}
+
+function limpiarScreening() {
+  document.getElementById('sc-files').value = '';
+  document.getElementById('sc-cv-list').innerHTML = '';
+  document.getElementById('sc-results').style.display = 'none';
+  document.getElementById('sc-msg-out').classList.remove('on');
+  document.getElementById('sc-btn').disabled = true;
+  S.cvFiles = []; cvReadTexts = [];
+}
+
+// ═══════════════════════════════════════════
+// ENTREVISTAS
+// ═══════════════════════════════════════════
+function swEnt(n) {
+  [1,2,3].forEach(i => {
+    document.getElementById('ent-p' + i).style.display = i===n ? 'block' : 'none';
+    document.getElementById('ent-t' + i).classList.toggle('active', i===n);
+  });
+}
+
+async function genEntrevista(n) {
+  const dp = getDp('ent');
+  const prompts = {
+    1: () => {
+      const comp = document.getElementById('ent1-comp').value;
+      const nivel = document.getElementById('ent1-nivel').value;
+      return `Generá una guía de competencias para selección de personal.
+${dp || 'Puesto: ' + (S.dpNombre||'sin especificar')}
+Nivel: ${nivel}
+${comp ? 'Competencias a incluir: ' + comp : ''}
+Empresa: Grupo Cober (sector salud)
+
+Para cada competencia:
+1. NOMBRE Y DEFINICIÓN
+2. INDICADORES CONDUCTUALES positivos
+3. INDICADORES CONDUCTUALES negativos
+4. PREGUNTA SUGERIDA para evaluarla
+
+Incluí competencias genéricas y específicas del rol. Lenguaje claro, sin jerga psicológica.`;
+    },
+    2: () => {
+      const tipo = document.getElementById('ent2-tipo').value;
+      const cant = document.getElementById('ent2-cant').value;
+      const foco = document.getElementById('ent2-foco').value;
+      return `Generá ${cant} preguntas de entrevista para el selector (no para el líder técnico).
+${dp || 'Puesto: ' + (S.dpNombre||'sin especificar')}
+Tipo: ${tipo}
+${foco ? 'Foco: ' + foco : ''}
+
+Para cada pregunta: la pregunta, qué evalúa, indicadores de buena respuesta. Numeralas.`;
+    },
+    3: () => {
+      const lider = document.getElementById('ent3-lider').value;
+      const tec = document.getElementById('ent3-tec').value;
+      return `Generá una guía de entrevista profesional y completa para el líder/hiring manager de Grupo Cober.
+${dp || 'Puesto: ' + (S.dpNombre||'sin especificar')}
+${lider ? 'Destinatario: ' + lider : ''}
+${tec ? 'Aspectos técnicos clave a evaluar: ' + tec : ''}
+Empresa: Grupo Cober (sector salud Argentina)
+
+Generá el siguiente formato completo:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GUÍA DE ENTREVISTA TÉCNICA PARA EL LÍDER
+Puesto: [puesto] | Fecha: ___/___/______
+Candidato/a: _______________________
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OBJETIVO DE LA ENTREVISTA
+[2-3 líneas explicando qué debe evaluar el líder y qué NO (eso ya lo hizo el selector)]
+
+ANTES DE EMPEZAR — RAPPORT (5 min)
+[3 preguntas cortas de apertura para generar clima cómodo]
+
+BLOQUE 1 — CONOCIMIENTO TÉCNICO (15 min)
+[8 preguntas técnicas específicas del rol, cada una con:
+  → Pregunta
+  → Qué evalúa
+  → Respuesta esperada / señales positivas
+  → Señales de alerta]
+
+BLOQUE 2 — EXPERIENCIA Y CRITERIO (10 min)
+[4 preguntas situacionales STAR adaptadas al rol, con mismo formato]
+
+BLOQUE 3 — FIT CON EL EQUIPO Y EL ÁREA (5 min)
+[3 preguntas sobre trabajo en equipo, adaptación, expectativas]
+
+CIERRE DE LA ENTREVISTA (5 min)
+[Qué información dar sobre el puesto, el área y próximos pasos. Texto sugerido palabra por palabra]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GRILLA DE EVALUACIÓN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[Tabla con: Dimensión | Puntaje 1-4 | Observaciones]
+Dimensiones: Conocimiento técnico / Criterio clínico o profesional / Comunicación / Actitud y motivación / Fit con el equipo
+
+PUNTAJE TOTAL: ___ / 16
+
+RECOMENDACIÓN DEL LÍDER:
+□ Avanzar  □ Avanzar con reservas  □ No avanzar
+Comentarios: ________________________________________________
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Lenguaje claro y directo. El líder no tiene formación en RRHH.`;
+    }
+  };
+
+  await withLb('ent' + n + '-lb', async () => {
+    const result = await ai(prompts[n](), 2200);
+    showOut('ent' + n + '-out', 'ent' + n + '-txt', result);
+  });
+}
+
+// ═══════════════════════════════════════════
+// ASSESSMENT CENTER
+// ═══════════════════════════════════════════
+function swAc(n) {
+  [1,2,3].forEach(i => {
+    document.getElementById('ac-p' + i).style.display = i===n ? 'block' : 'none';
+    document.getElementById('ac-t' + i).classList.toggle('active', i===n);
+  });
+}
+
+async function genAc(n) {
+  const dp = getDp('ac');
+  const prompts = {
+    1: () => {
+      const tipo = document.getElementById('ac1-tipo').value;
+      const part = document.getElementById('ac1-part').value;
+      const comp = document.getElementById('ac1-comp').value;
+      const dur = document.getElementById('ac1-dur').value;
+      return `Diseñá un Assessment Center para selección de personal.
+${dp || 'Puesto: ' + (S.dpNombre||'sin especificar')}
+Tipo: ${tipo} · Participantes: ${part} · Duración: ${dur}
+Competencias: ${comp || 'las relevantes para el puesto'}
+Empresa: Grupo Cober (sector salud Argentina)
+
+Generá:
+1. CONSIGNA PARA CANDIDATOS (texto exacto a entregar)
+2. DESCRIPCIÓN DEL EJERCICIO
+3. COMPETENCIAS que evalúa cada parte
+4. INSTRUCCIONES PARA OBSERVADORES
+5. PREGUNTAS DE DEBRIEFING`;
+    },
+    2: () => {
+      const cands = document.getElementById('ac2-cands').value;
+      const escala = document.getElementById('ac2-escala').value;
+      return `Generá una grilla de observación para Assessment Center.
+${dp || 'Puesto: ' + (S.dpNombre||'sin especificar')}
+${cands ? 'Candidatos: ' + cands : ''}
+Escala: ${escala}
+
+Generá:
+1. INSTRUCCIONES PARA OBSERVADORES
+2. GRILLA DE OBSERVACIÓN con candidatos y competencias
+3. DESCRIPTORES de cada nivel de la escala
+4. ESPACIO PARA COMENTARIOS por candidato
+5. TABLA RESUMEN de puntajes`;
+    },
+    3: () => {
+      const obs = document.getElementById('ac3-obs').value.trim();
+      if (!obs) throw new Error('Ingresá las observaciones de los evaluadores');
+      return `Generá un informe consolidado de Assessment Center.
+${dp || 'Puesto: ' + (S.dpNombre||'sin especificar')}
+Empresa: Grupo Cober
+
+OBSERVACIONES:
+${obs}
+
+Incluí:
+1. RESUMEN EJECUTIVO del AC
+2. TABLA COMPARATIVA de candidatos (mayor a menor adecuación)
+3. ANÁLISIS INDIVIDUAL de cada candidato
+4. RANKING FINAL con justificación
+5. RECOMENDACIÓN
+
+Objetivo, profesional, sin jerga psicológica.`;
+    }
+  };
+
+  await withLb('ac' + n + '-lb', async () => {
+    const result = await ai(prompts[n](), 2500);
+    showOut('ac' + n + '-out', 'ac' + n + '-txt', result);
+  });
+}
+
+async function genMinutaAC() {
+  const text = document.getElementById('ac3-txt').textContent;
+  if (!text) return alert('Primero generá el consolidado');
+  await withLb('ac3-lb', async () => {
+    const result = await ai('A partir de este consolidado de Assessment Center, generá una minuta ejecutiva para el líder. Máximo una página. Incluir: fecha, puesto, participantes, resultados clave (tabla), candidatos recomendados, próximos pasos. Firma: Equipo de Atracción de Talento · Grupo Cober.\n\nCONSOLIDADO:\n' + text, 1000);
+    dlPdfText('Minuta Assessment Center · Grupo Cober', result, 'minuta_ac');
+  });
+}
+
+// ═══════════════════════════════════════════
+// INFORME DE ENTREVISTA
+// ═══════════════════════════════════════════
+async function generarInforme() {
+  const nombre = document.getElementById('inf-nombre').value.trim();
+  const obs = document.getElementById('inf-obs').value.trim();
+  if (!nombre || !obs) return alert('Completá el nombre y las observaciones');
+
+  const puesto = document.getElementById('inf-puesto').value || S.dpNombre || '';
+  const fecha = document.getElementById('inf-fecha').value;
+  const result2 = document.getElementById('inf-result').value;
+
+  await withLb('inf-lb', async () => {
+    const prompt = `Generá un informe de entrevista ejecutivo para el líder. Sin jerga de RRHH. Máximo 400 palabras.
+
+CANDIDATO: ${nombre}
+${puesto ? 'PUESTO: ' + puesto : ''}
+${fecha ? 'FECHA: ' + fecha : ''}
+${result2 ? 'RESULTADO: ' + result2 : ''}
+${getDp()}
+
+OBSERVACIONES DEL SELECTOR:
+${obs}
+
+FORMATO EXACTO (4 secciones):
+
+1. RESUMEN DEL PERFIL
+[Síntesis en 3-4 oraciones: quién es, experiencia, formación, aspecto más destacado]
+
+2. PRINCIPALES FORTALEZAS Y RIESGOS
+Fortalezas: [2-3 fortalezas concretas]
+Riesgos o puntos de atención: [1-2 aspectos a considerar]
+
+3. MOTIVACIONES Y EXPECTATIVAS
+[Qué lo motiva, qué busca, expectativas salariales si las hay, disponibilidad]
+
+4. RECOMENDACIÓN FINAL
+[Conclusión clara: apto/no apto/con reservas y por qué. Próximo paso sugerido]`;
+
+    const r = await ai(prompt);
+    showOut('inf-out', 'inf-txt', r);
+    S._lastInf = { nombre };
+  });
+}
+
+// ═══════════════════════════════════════════
+// INFORME PSICOTÉCNICO
+// ═══════════════════════════════════════════
+function handlePsicoFile(file) {
+  if (!file) return;
+  S.psicoFile = file;
+  const list = document.getElementById('ps-info');
+  list.innerHTML = ''; list.appendChild(fileItem(file.name, file.size));
+  document.getElementById('ps-btn').disabled = false;
+}
+
+async function generarPsico() {
+  if (!S.psicoFile) return;
+  const nombre = document.getElementById('ps-nombre').value.trim();
+  if (!nombre) return alert('Ingresá el nombre del candidato');
+
+  const puesto = document.getElementById('ps-puesto').value || S.dpNombre || '';
+  const ctx = document.getElementById('ps-ctx').value;
+
+  await withLb('ps-lb', async () => {
+    const text = (await readFile(S.psicoFile)).slice(0, 5000);
+    const prompt = `Sos especialista en RRHH generando un resumen psicotécnico para un líder empresarial sin formación en psicología.
+
+CANDIDATO: ${nombre}
+${puesto ? 'PUESTO: ' + puesto : ''}
+${ctx ? 'CONTEXTO DEL PUESTO: ' + ctx : ''}
+Empresa: Grupo Cober
+
+INFORME PSICOTÉCNICO:
+${text}
+
+Generá un resumen con este formato EXACTO (sin jerga psicológica, lenguaje claro y directo):
+
+RESUMEN PSICOTÉCNICO · ${nombre}
+${puesto ? 'Puesto: ' + puesto : ''}
+Fecha: ${new Date().toLocaleDateString('es-AR')}
+
+1. PERFIL GENERAL
+[2-3 oraciones: personalidad, forma de relacionarse, estilo de trabajo]
+
+2. FORTALEZAS IDENTIFICADAS
+[Bullets con fortalezas relevantes para el trabajo]
+
+3. ÁREAS DE ATENCIÓN
+[Si las hay: aspectos que el líder debe considerar, en lenguaje de gestión]
+
+4. APTITUD PARA EL PUESTO
+[Evaluación concreta de adecuación al rol]
+
+5. RECOMENDACIÓN
+[Recomendado / Con reservas / No recomendado + breve justificación]
+
+IMPORTANTE: Evitá términos como "introversión severa", "MMPI", "ansiedad rasgo". Usá lenguaje simple como "prefiere trabajar de forma independiente", "tiende a preocuparse más de lo habitual".`;
+
+    const r = await ai(prompt, 2000);
+    showOut('ps-out', 'ps-txt', r);
+    S.lastPsicoNombre = nombre;
+  });
+}
+
+function dlPsicoWord() {
+  const nombre = S.lastPsicoNombre || 'candidato';
+  const _el = document.getElementById('ps-txt'); const text = _el?._rawText || _el?.textContent || '';
+  if (!text) return alert('Primero generá el resumen');
+  const parts = [
+    '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">',
+    '<head><meta charset="UTF-8">',
+    '<style>body{font-family:Calibri,sans-serif;font-size:11pt;line-height:1.5;margin:2cm}',
+    'h1{font-size:14pt;color:#1a365d;border-bottom:2px solid #3b82f6;padding-bottom:4pt}',
+    'pre{font-family:Calibri,sans-serif;white-space:pre-wrap;font-size:11pt}</style>',
+    '</head><body>',
+    '<h1>Grupo Cober · Resumen Psicotécnico</h1>',
+    '<pre>' + text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre>',
+    '</body></html>'
+  ];
+  const blob = new Blob([parts.join('')], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'psico_' + nombre.replace(/\s/g,'_') + '.doc';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════════
+// FEEDBACK
+// ═══════════════════════════════════════════
+async function generarFeedback() {
+  const nombre = document.getElementById('fb-nombre').value.trim();
+  if (!nombre) return alert('Ingresá el nombre del candidato');
+  const resultVal = document.getElementById('fb-result').value;
+  const canal = document.getElementById('fb-canal').value;
+  const tono = document.getElementById('fb-tono').value;
+  const motivos = document.getElementById('fb-motivos').value;
+  const resTextos = {
+    avanza: 'el candidato avanza al siguiente paso del proceso',
+    descartado: 'el candidato no continúa en el proceso',
+    espera: 'el candidato queda en lista de espera',
+    oferta: 'se le realizará una oferta al candidato'
+  };
+
+  await withLb('fb-lb', async () => {
+    const prompt = 'Generá un mensaje de feedback para: ' + nombre + '. Resultado: ' + resTextos[resultVal] + '. Canal: ' + canal + '. Tono: ' + tono + (motivos ? '. Contexto: ' + motivos : '') + '. Empresa: Grupo Cober. ' + (canal==='WhatsApp'?'Máximo 120 palabras.':'Incluir asunto de mail.') + ' Usar [NOMBRE] como placeholder. Firmar como Equipo de Atracción de Talento · Grupo Cober. En español argentino.';
+    const r = await ai(prompt, 600);
+    showOut('fb-out', 'fb-txt', r);
+  });
+}
+
+// ═══════════════════════════════════════════
+// CARTA OFERTA
+// ═══════════════════════════════════════════
+function swOferta(mode) {
+  document.getElementById('of-ind').style.display = mode==='ind'?'block':'none';
+  document.getElementById('of-mas').style.display = mode==='mas'?'block':'none';
+  document.getElementById('of-m1').classList.toggle('active', mode==='ind');
+  document.getElementById('of-m2').classList.toggle('active', mode==='mas');
+}
+
+function swMas(tab) {
+  document.getElementById('mas-var-panel').style.display = tab==='var'?'block':'none';
+  document.getElementById('mas-uni-panel').style.display = tab==='uni'?'block':'none';
+  document.getElementById('mas-t1').classList.toggle('active', tab==='var');
+  document.getElementById('mas-t2').classList.toggle('active', tab==='uni');
+}
+
+function togglePlazo(prefix) {
+  const val = document.getElementById(prefix+'-contrato')?.value;
+  const el = document.getElementById(prefix+'-plazo');
+  if (el) el.style.display = val==='Plazo Fijo' ? 'block' : 'none';
+}
+
+function addRow() {
+  const tr = document.createElement('tr');
+  tr.innerHTML = '<td><input placeholder="Nombre Apellido" class="mn" style="width:100%;background:transparent;border:none;color:var(--tx);font-size:12px;outline:none;padding:2px 3px"></td><td><input placeholder="$ 0.000.000" class="ms" style="width:100%;background:transparent;border:none;color:var(--tx);font-size:12px;outline:none;padding:2px 3px"></td><td><input type="date" class="mf" style="width:100%;background:transparent;border:none;color:var(--tx);font-size:12px;outline:none;padding:2px 3px"></td><td><span onclick="rmRow(this)" style="cursor:pointer;color:var(--tx3);padding:4px 8px" onmouseover="this.style.color=\'var(--danger)\'" onmouseout="this.style.color=\'var(--tx3)\'">✕</span></td>';
+  document.getElementById('mas-tbody').appendChild(tr);
+}
+
+function rmRow(btn) {
+  if (document.querySelectorAll('#mas-tbody tr').length > 1) btn.closest('tr').remove();
+}
+
+function fechaStr(val) {
+  if (!val) return 'A confirmar';
+  return new Date(val + 'T12:00').toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
+}
+
+function buildOfertaPrompt(nombre, puesto, empresa, area, salario, fecha, modalidad, contrato, beneficios, adicionales, desde, hasta) {
+  const contratoStr = contrato==='Plazo Fijo' && desde && hasta
+    ? 'Plazo Fijo desde ' + fechaStr(desde) + ' hasta ' + fechaStr(hasta)
+    : contrato || 'Indeterminado';
+  const hoy = new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
+  const limite = new Date(); limite.setDate(limite.getDate()+5);
+  const limiteStr = limite.toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
+
+  return `Generá una carta oferta laboral formal para Grupo Cober. Seguí EXACTAMENTE este formato y estructura, completando con los datos provistos:
+
+─────────────────────────────────────────
+Buenos Aires, ${hoy}
+
+Señor/a ${nombre}
+Presente
+
+De nuestra mayor consideración:
+
+Por medio de la presente, nos es grato comunicarle que, luego del proceso de selección llevado a cabo, hemos tomado la decisión de extenderle una oferta laboral para incorporarse a ${empresa||'Grupo Cober'} en el cargo de ${puesto||'[puesto]'}${area ? ', dependiente del área de ' + area : ''}.
+
+Las condiciones de la propuesta son las siguientes:
+
+CONDICIONES LABORALES
+• Cargo: ${puesto||'[puesto]'}
+• Modalidad de contratación: ${contratoStr}
+• Remuneración bruta mensual: $${salario||'[a convenir]'}
+• Modalidad de trabajo: ${modalidad||'Presencial'}
+• Lugar de trabajo: ${empresa||'Grupo Cober'}
+• Fecha de incorporación: ${fechaStr(fecha)}
+${adicionales ? '• Condiciones adicionales: ' + adicionales : ''}
+
+${beneficios ? 'BENEFICIOS\n' + beneficios.split('\n').filter(Boolean).map(b => '• ' + b.trim()).join('\n') : 'BENEFICIOS\n• Obra social Cober para grupo familiar\n• Beneficios del Grupo Cober'}
+
+La presente oferta tendrá vigencia hasta el día ${limiteStr}. Le solicitamos nos confirme su aceptación por escrito antes de dicha fecha.
+
+El inicio efectivo de la relación laboral quedará sujeto a la presentación de la documentación requerida y la aprobación del examen preocupacional.
+
+Sin otro particular, aprovechamos la oportunidad para saludarle muy atentamente.
+
+
+_______________________________
+Equipo de Atracción de Talento
+Gestión de las Personas
+Grupo Cober
+─────────────────────────────────────────
+
+Devolvé la carta exactamente con este formato. No agregues texto antes ni después.`;
+}
+
+async function generarOfertaInd() {
+  const nombre = document.getElementById('of-nombre').value.trim();
+  if (!nombre) return alert('Ingresá el nombre del candidato');
+  const puesto = document.getElementById('of-puesto').value || S.dpNombre || '';
+  const empresa = document.getElementById('of-empresa').value;
+  const area = document.getElementById('of-area').value;
+  const salario = document.getElementById('of-salario').value;
+  const fecha = document.getElementById('of-fecha').value;
+  const modalidad = document.getElementById('of-modalidad').value;
+  const contrato = document.getElementById('of-contrato').value;
+  const beneficios = document.getElementById('of-beneficios').value;
+  const adicionales = document.getElementById('of-adicionales').value;
+  const desde = document.getElementById('of-plazo-desde')?.value;
+  const hasta = document.getElementById('of-plazo-hasta')?.value;
+
+  await withLb('of-lb', async () => {
+    const r = await ai(buildOfertaPrompt(nombre,puesto,empresa,area,salario,fecha,modalidad,contrato,beneficios,adicionales,desde,hasta));
+    showOut('of-out', 'of-txt', r);
+    S.lastOfertaNombre = nombre;
+  });
+}
+
+function dlOfertaPdf() {
+  const t = document.getElementById('of-txt').textContent;
+  if (!t) return;
+  dlPdfText('Carta Oferta · ' + (S.lastOfertaNombre||''), t, 'carta_oferta_' + (S.lastOfertaNombre||'candidato').replace(/\s/g,'_'));
+}
+
+async function generarMasivo() {
+  const isVar = document.getElementById('mas-t1').classList.contains('active');
+  const puesto = document.getElementById('mas-puesto').value || S.dpNombre || '';
+  const empresa = document.getElementById('mas-empresa').value;
+  const modalidad = document.getElementById('mas-modalidad').value;
+  const contrato = document.getElementById('mas-contrato').value;
+  const beneficios = document.getElementById('mas-beneficios').value;
+  const adicionales = document.getElementById('mas-adicionales').value;
+  const desde = document.getElementById('mas-plazo-desde')?.value;
+  const hasta = document.getElementById('mas-plazo-hasta')?.value;
+
+  let candidatos = [];
+  if (isVar) {
+    document.querySelectorAll('#mas-tbody tr').forEach(row => {
+      const n = row.querySelector('.mn')?.value?.trim();
+      const s = row.querySelector('.ms')?.value?.trim();
+      const f = row.querySelector('.mf')?.value;
+      if (n) candidatos.push({ nombre:n, salario:s, fecha:f });
+    });
+  } else {
+    const sal = document.getElementById('mas-sal-uni').value;
+    const fec = document.getElementById('mas-fecha-uni').value;
+    document.getElementById('mas-nombres').value.split('\n').map(n=>n.trim()).filter(Boolean)
+      .forEach(n => candidatos.push({ nombre:n, salario:sal, fecha:fec }));
+  }
+
+  if (!candidatos.length) return alert('Ingresá al menos un candidato');
+  const container = document.getElementById('mas-output');
+  container.innerHTML = '';
+  _todasCartas = [];
+  lb('mas-lb', true);
+
+  for (const c of candidatos) {
+    try {
+      const r = await ai(buildOfertaPrompt(c.nombre,puesto,empresa,'',c.salario,c.fecha,modalidad,contrato,beneficios,adicionales,desde,hasta));
+      _todasCartas.push({ nombre: c.nombre, texto: r });
+      const card = document.createElement('div');
+      card.className = 'card'; card.style.marginTop = '10px';
+      const head = document.createElement('div');
+      head.className = 'flx'; head.style.marginBottom = '8px';
+      head.innerHTML = '<div style="font-weight:600;font-size:13px">📄 ' + c.nombre + '</div>';
+      const pre = document.createElement('pre');
+      pre.style.cssText = 'font-size:12px;line-height:1.7;white-space:pre-wrap;color:var(--tx)';
+      pre.textContent = r;
+      const copyB = document.createElement('button');
+      copyB.className = 'cbtn'; copyB.textContent = 'Copiar';
+      copyB.onclick = () => { navigator.clipboard.writeText(pre.textContent); copyB.textContent='✓'; setTimeout(()=>copyB.textContent='Copiar',1500); };
+      const pdfB = document.createElement('button');
+      pdfB.className = 'cbtn'; pdfB.textContent = '⬇ PDF';
+      pdfB.onclick = () => dlPdfText('Carta Oferta · ' + c.nombre, pre.textContent, 'carta_' + c.nombre.replace(/\s/g,'_'));
+      const btns = document.createElement('div'); btns.style.display='flex'; btns.style.gap='6px';
+      btns.appendChild(copyB); btns.appendChild(pdfB);
+      head.appendChild(btns); card.appendChild(head); card.appendChild(pre);
+      container.appendChild(card);
+    } catch(e) {
+      const err = document.createElement('div');
+      err.className = 'alert alert-warn';
+      err.textContent = 'Error: ' + c.nombre + ' — ' + e.message;
+      container.appendChild(err);
+    }
+  }
+  lb('mas-lb', false);
+  if (_todasCartas.length > 0) document.getElementById('mas-dl-all-btn').style.display = 'inline-flex';
+}
+
+// ═══════════════════════════════════════════
+// SHORTLIST AL LÍDER
+// ═══════════════════════════════════════════
+function handleShortlist(files) {
+  S.shortlistFiles = [...S.shortlistFiles, ...Array.from(files)];
+  renderShortlistFiles();
+  document.getElementById('lid-btn').disabled = S.shortlistFiles.length === 0;
+}
+
+function renderShortlistFiles() {
+  const list = document.getElementById('lid-file-list');
+  list.innerHTML = '';
+  S.shortlistFiles.forEach((f, i) => {
+    list.appendChild(fileItem(f.name, f.size, () => {
+      S.shortlistFiles.splice(i, 1);
+      renderShortlistFiles();
+      document.getElementById('lid-btn').disabled = S.shortlistFiles.length === 0;
+    }));
+  });
+}
+
+async function generarShortlist() {
+  const lider = document.getElementById('lid-nombre').value.trim();
+  if (!lider) return alert('Ingresá el nombre del líder');
+  if (!S.shortlistFiles.length) return alert('Subí al menos un archivo');
+
+  lb('lid-lb', true);
+  try {
+    const texts = [];
+    for (const f of S.shortlistFiles) {
+      const t = (await readFile(f)).slice(0, 2000);
+      texts.push('--- ' + f.name + ' ---\n' + t);
+    }
+    const puesto = document.getElementById('lid-puesto').value || S.dpNombre || '';
+    const obs = document.getElementById('lid-obs').value;
+
+    const prompt = `Generá un informe comparativo de shortlist para presentar al líder de selección.
+Líder: ${lider}
+${puesto ? 'Puesto: ' + puesto : ''}
+${obs ? 'Observaciones del selector: ' + obs : ''}
+Empresa: Grupo Cober
+
+DOCUMENTOS DE CANDIDATOS:
+${texts.join('\n\n')}
+
+El informe debe incluir:
+1. INTRODUCCIÓN (breve, qué proceso se realizó, cuántos candidatos)
+2. TABLA COMPARATIVA (nombre, experiencia clave, fortaleza principal, adecuación al puesto)
+3. PERFIL INDIVIDUAL de cada candidato:
+   • Nombre
+   • Síntesis del perfil (3-4 líneas)
+   • Fortalezas principales
+   • Puntos de atención (si los hay)
+4. RECOMENDACIÓN DEL SELECTOR (candidato/s recomendados y por qué)
+5. PRÓXIMOS PASOS PROPUESTOS
+
+Simple, profesional, sin jerga de RRHH. Máximo 2 páginas.
+Firma: Equipo de Atracción de Talento · Grupo Cober`;
+
+    const r = await ai(prompt, 3000);
+    showOut('lid-out', 'lid-txt', r);
+    document.getElementById('lid-pdf-btn').style.display = 'inline-flex';
+  } catch(e) { alert('Error: ' + e.message); }
+  lb('lid-lb', false);
+}
+
+function limpiarShortlist() {
+  S.shortlistFiles = [];
+  document.getElementById('lid-files').value = '';
+  document.getElementById('lid-file-list').innerHTML = '';
+  document.getElementById('lid-btn').disabled = true;
+  document.getElementById('lid-pdf-btn').style.display = 'none';
+  document.getElementById('lid-out').classList.remove('on');
+}
+
+// ═══════════════════════════════════════════
+// PDF GENERATOR
+// ═══════════════════════════════════════════
+function dlPdf(txtId, titulo, filename) {
+  const el = document.getElementById(txtId);
+  const text = el?._rawText || el?.textContent || '';
+  if (!text) return alert('Primero generá el contenido');
+  dlPdfText(titulo, text, filename);
+}
+
+function stripMd(text) {
+  return text
+    .replace(/\*\*\*(.+?)\*\*\*/g,'$1')
+    .replace(/\*\*(.+?)\*\*/g,'$1')
+    .replace(/\*(.+?)\*/g,'$1')
+    .replace(/^#{1,3}\s+/gm,'')
+    .replace(/^[-─━]{3,}$/gm,'──────────────────────────');
+}
+
+function dlPdfText(titulo, text, filename) {
+  text = stripMd(text);
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const margin = 20, pw = 210, ph = 297, cw = pw - margin*2;
+
+  // Header
+  doc.setFillColor(10,12,20);
+  doc.rect(0, 0, pw, 28, 'F');
+  doc.setFontSize(15); doc.setFont(undefined,'bold'); doc.setTextColor(255,255,255);
+  doc.text('GRUPO COBER', margin, 12);
+  doc.setFontSize(9); doc.setFont(undefined,'normal'); doc.setTextColor(150,170,200);
+  doc.text('Gestión de las Personas · Equipo de Atracción de Talento', margin, 19);
+  doc.text(new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'}), pw-margin, 19, {align:'right'});
+
+  // Title
+  doc.setFontSize(13); doc.setFont(undefined,'bold'); doc.setTextColor(15,17,23);
+  doc.text(titulo.slice(0,75), margin, 40);
+  doc.setDrawColor(59,130,246); doc.setLineWidth(0.7);
+  doc.line(margin, 44, pw-margin, 44);
+
+  // Content
+  doc.setFontSize(10); doc.setFont(undefined,'normal'); doc.setTextColor(30,35,48);
+  const lines = doc.splitTextToSize(text, cw);
+  let y = 52;
+  for (const line of lines) {
+    if (y > ph - 18) { doc.addPage(); y = 20; }
+    doc.text(line, margin, y);
+    y += 5.5;
+  }
+
+  // Footer
+  const pages = doc.getNumberOfPages();
+  for (let i = 1; i <= pages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8); doc.setTextColor(150,160,180);
+    doc.text('Grupo Cober · Confidencial', margin, ph-8);
+    doc.text(i + ' / ' + pages, pw-margin, ph-8, {align:'right'});
+  }
+
+  doc.save(filename + '_' + new Date().toISOString().slice(0,10) + '.pdf');
+}
+
+// ═══════════════════════════════════════════
+// DP DOWNLOAD (PDF + Word)
+// ═══════════════════════════════════════════
+function dlDpPdf() {
+  const puesto = document.getElementById('dp-puesto')?.value || S.dpNombre || 'Descripción de Puesto';
+  dlPdf('dp-txt', 'Descripción de Puesto · ' + puesto, 'dp_' + puesto.replace(/\s/g,'_').replace(/\//g,'-'));
+}
+
+function dlDpWord() {
+  const puesto = document.getElementById('dp-puesto')?.value || S.dpNombre || 'Descripción de Puesto';
+  const el = document.getElementById('dp-txt');
+  const text = el?._rawText || el?.textContent || '';
+  if (!text) return alert('Primero generá la DP');
+  dlWord('Descripción de Puesto · ' + puesto, text, 'dp_' + puesto.replace(/\s/g,'_').replace(/\//g,'-'));
+}
+
+// ═══════════════════════════════════════════
+// INFORME ENTREVISTA WORD
+// ═══════════════════════════════════════════
+function dlInformeWord() {
+  const nombre = document.getElementById('inf-nombre')?.value || 'candidato';
+  const el = document.getElementById('inf-txt');
+  const text = el?._rawText || el?.textContent || '';
+  if (!text) return alert('Primero generá el informe');
+  dlWord('Informe de Entrevista · ' + nombre, text, 'informe_' + nombre.replace(/\s/g,'_'));
+}
+
+// ═══════════════════════════════════════════
+// WORD GENERATOR
+// ═══════════════════════════════════════════
+function dlWord(titulo, text, filename) {
+  // Convert markdown to basic HTML for Word
+  text = text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*\*(.+?)\*\*\*/g,'<b><i>$1</i></b>')
+    .replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')
+    .replace(/\*(.+?)\*/g,'<i>$1</i>')
+    .replace(/^#{3}\s+(.+)$/gm,'<h3>$1</h3>')
+    .replace(/^#{2}\s+(.+)$/gm,'<h2>$1</h2>')
+    .replace(/^#{1}\s+(.+)$/gm,'<h1>$1</h1>')
+    .replace(/^[-─━]{3,}$/gm,'<hr>')
+    .replace(/\n/g,'<br>');
+  const escaped = text; // already processed
+  const parts = [
+    '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">',
+    '<head><meta charset="UTF-8">',
+    '<style>',
+    'body{font-family:Calibri,sans-serif;font-size:11pt;line-height:1.6;margin:2.5cm}',
+    'h1{font-size:14pt;font-weight:bold;color:#1a365d;border-bottom:2pt solid #3b82f6;padding-bottom:6pt;margin-bottom:12pt}',
+    '.header{background:#0f1117;color:white;padding:14pt 20pt;margin-bottom:20pt}',
+    '.header-title{font-size:16pt;font-weight:bold;color:white}',
+    '.header-sub{font-size:9pt;color:#94a3b8;margin-top:3pt}',
+    'pre{font-family:Calibri,sans-serif;font-size:11pt;white-space:pre-wrap;line-height:1.7}',
+    '.footer{margin-top:20pt;padding-top:8pt;border-top:1pt solid #cbd5e1;font-size:9pt;color:#64748b}',
+    '</style></head><body>',
+    '<div class="header">',
+    '<div class="header-title">GRUPO COBER</div>',
+    '<div class="header-sub">Gestión de las Personas · Equipo de Atracción de Talento</div>',
+    '</div>',
+    '<h1>' + titulo.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</h1>',
+    '<div style="font-family:Calibri,sans-serif;font-size:11pt;line-height:1.7">' + escaped + '</div>',
+    '<div class="footer">Grupo Cober · Confidencial · ' + new Date().toLocaleDateString('es-AR') + '</div>',
+    '</body></html>'
+  ];
+  const blob = new Blob([parts.join('')], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename + '_' + new Date().toISOString().slice(0,10) + '.doc';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════════
+// DESCARGAR TODAS LAS CARTAS
+// ═══════════════════════════════════════════
+let _todasCartas = [];
+
+function descargarTodasCartas() {
+  if (!_todasCartas.length) return alert('No hay cartas generadas');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const margin = 20, pw = 210, ph = 297, cw = pw - margin*2;
+
+  _todasCartas.forEach((carta, idx) => {
+    if (idx > 0) doc.addPage();
+    // Header
+    doc.setFillColor(10,12,20); doc.rect(0,0,pw,28,'F');
+    doc.setFontSize(14); doc.setFont(undefined,'bold'); doc.setTextColor(255,255,255);
+    doc.text('GRUPO COBER', margin, 12);
+    doc.setFontSize(8); doc.setFont(undefined,'normal'); doc.setTextColor(150,170,200);
+    doc.text('Gestión de las Personas · Equipo de Atracción de Talento', margin, 19);
+    doc.text(new Date().toLocaleDateString('es-AR'), pw-margin, 19, {align:'right'});
+    // Title
+    doc.setFontSize(12); doc.setFont(undefined,'bold'); doc.setTextColor(15,17,23);
+    doc.text('Carta Oferta · ' + carta.nombre, margin, 40);
+    doc.setDrawColor(59,130,246); doc.setLineWidth(0.7);
+    doc.line(margin, 44, pw-margin, 44);
+    // Content
+    doc.setFontSize(10); doc.setFont(undefined,'normal'); doc.setTextColor(30,35,48);
+    const lines = doc.splitTextToSize(carta.texto, cw);
+    let y = 52;
+    for (const line of lines) {
+      if (y > ph-18) { doc.addPage(); y = 20; }
+      doc.text(line, margin, y); y += 5.5;
+    }
+  });
+
+  const pages = doc.getNumberOfPages();
+  for (let i=1;i<=pages;i++) {
+    doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150,160,180);
+    doc.text('Grupo Cober · Confidencial', margin, ph-8);
+    doc.text(i+' / '+pages, pw-margin, ph-8, {align:'right'});
+  }
+  doc.save('cartas_oferta_' + new Date().toISOString().slice(0,10) + '.pdf');
+}
+
+// ═══════════════════════════════════════════
+// DRAG & DROP
+// ═══════════════════════════════════════════
+function setupDd(zoneId, handler) {
+  const z = document.getElementById(zoneId);
+  if (!z) return;
+  z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('drag'); });
+  z.addEventListener('dragleave', () => z.classList.remove('drag'));
+  z.addEventListener('drop', e => { e.preventDefault(); z.classList.remove('drag'); handler(e.dataTransfer.files); });
+}
+
+setupDd('sc-zone', f => handleCvs(f));
+setupDd('dp-upload-zone', f => handleDpUpload(f[0]));
+setupDd('ps-zone', f => handlePsicoFile(f[0]));
+setupDd('lid-zone', f => handleShortlist(f));
+setupDd('ap-dp-zone', f => handleModuloDp(f[0], 'ap'));
+setupDd('es-dp-zone', f => handleModuloDp(f[0], 'es'));
+setupDd('sc-dp-zone', f => handleModuloDp(f[0], 'sc'));
+setupDd('ent-dp-zone', f => handleModuloDp(f[0], 'ent'));
+setupDd('ac-dp-zone', f => handleModuloDp(f[0], 'ac'));
+</script>
+</body>
+</html>
